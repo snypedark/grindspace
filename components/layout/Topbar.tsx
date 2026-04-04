@@ -10,11 +10,24 @@ import { SKILLS } from '@/constants/skills'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-function getGreeting() {
+function getGreeting(name: string) {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
+  const day = new Date().getDay()
+  
+  // Mix of time-based and motivational greetings (deterministic by day/hour)
+  if (day === 0 || day === 3 || day === 6) {
+    if (hour < 12) return `Good morning, ${name} ☀️`
+    if (hour < 17) return `Good afternoon, ${name} 🔥`
+    return `Good evening, ${name} 🌙`
+  }
+  
+  const motivational = [
+    `Stay sharp, ${name} 💪`,
+    `Let's build today, ${name} 🚀`,
+    `Focus mode: ON, ${name} ⚡`,
+    `Crush your goals, ${name} 🎯`
+  ]
+  return motivational[day % motivational.length]
 }
 
 function formatDate() {
@@ -75,15 +88,20 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
   async function handleSignOut() {
     await signOut()
     router.push('/login')
+    router.refresh()
   }
+
+  // To prevent hydration mismatches with time/date, we'll format them slightly safely
+  // or just accept we might get a minor hydration warning (though it's "use client").
+  const greeting = getGreeting(displayName)
 
   return (
     <>
       <header className="sticky top-0 z-20 w-full h-16 bg-white/95 backdrop-blur-sm border-b border-border flex items-center px-6 gap-4">
         {/* Greeting */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h1 className="text-sm font-semibold text-text-primary whitespace-nowrap overflow-hidden text-ellipsis">
-            {getGreeting()}, {displayName} 👋
+          <h1 className="text-sm font-semibold text-text-primary whitespace-nowrap overflow-hidden text-ellipsis leading-tight">
+            {greeting}
           </h1>
           <p className="text-xs text-text-secondary whitespace-nowrap overflow-hidden text-ellipsis">{formatDate()}</p>
         </div>
@@ -124,14 +142,14 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
               onClick={() => setAvatarOpen((v) => !v)}
               className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
             >
-              <Avatar name={displayName} size="sm" />
+              <Avatar src={profile?.avatar_url} name={displayName} size="sm" />
               <ChevronDown size={12} className="text-text-secondary" />
             </button>
             {avatarOpen && (
               <div className="absolute right-0 top-11 bg-white border border-border rounded-xl shadow-card-hover min-w-[160px] py-1 z-50 animate-fade-slide-up">
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-xs font-semibold text-text-primary truncate">{displayName}</p>
-                  <p className="text-[10px] text-text-secondary truncate">{user?.email}</p>
+                  <p className="text-[10px] text-text-secondary truncate pt-0.5 opacity-80">{user?.email}</p>
                 </div>
                 <button
                   onClick={handleSignOut}

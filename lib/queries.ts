@@ -21,6 +21,55 @@ export async function updateProfile(userId: string, updates: Partial<Profile>) {
   return supabase.from('profiles').update(updates).eq('id', userId)
 }
 
+export async function checkUsernameAvailable(username: string): Promise<boolean> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('username', username)
+    .single()
+  
+  if (error && error.code === 'PGRST116') {
+    // PGRST116 is "No rows found" which means username is available
+    return true
+  }
+  return false
+}
+
+export async function createProfile(id: string, username: string, avatar_url?: string | null) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert([{ id, username, avatar_url }])
+    .select()
+    .single()
+  return { data, error }
+}
+
+export async function uploadAvatar(userId: string, file: File): Promise<{ url: string | null; error: Error | null }> {
+  try {
+    const supabase = createClient()
+    const ext = file.name.split('.').pop()
+    const fileName = `${userId}_${Date.now()}.${ext}`
+    
+    // Upload file
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { cacheControl: '3600', upsert: true })
+
+    if (uploadError) throw uploadError
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName)
+
+    return { url: publicUrl, error: null }
+  } catch (err: any) {
+    return { url: null, error: err }
+  }
+}
+
 // ─── Sessions ────────────────────────────────────────────────────────────────
 
 export async function getUserSessions(userId: string): Promise<Session[]> {
