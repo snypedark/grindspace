@@ -12,6 +12,7 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from './supabase'
 import { getUserProfile } from './queries'
 import type { Profile } from '@/types/user'
+import { useMemo } from 'react'
 
 interface AuthContextType {
   user: User | null
@@ -33,7 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
+
+  // Requested debug logs
+  useEffect(() => {
+    console.log("user:", user)
+    console.log("profile:", profile)
+    console.log("loading:", loading)
+  }, [user, profile, loading])
 
   const loadProfile = useCallback(async (userId: string) => {
     const p = await getUserProfile(userId)

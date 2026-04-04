@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/lib/AuthContext'
-import { updateProfile, checkUsernameAvailable, uploadAvatar } from '@/lib/queries'
+import { updateProfile, checkUsernameAvailable, uploadAvatar, createProfile } from '@/lib/queries'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { CheckCircle2, XCircle, Loader2, Upload, Save } from 'lucide-react'
@@ -18,7 +18,7 @@ const AVATAR_PRESETS = [
 ]
 
 export default function ProfilePage() {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth()
 
   // Form state
   const [username, setUsername] = useState('')
@@ -128,14 +128,24 @@ export default function ProfilePage() {
     if (username !== profile?.username) updates.username = username
     if (finalAvatarUrl !== profile?.avatar_url) updates.avatar_url = finalAvatarUrl
 
-    if (Object.keys(updates).length === 0) {
+    if (Object.keys(updates).length === 0 && profile) {
       setSaving(false)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       return
     }
 
-    const { error: updateErr } = await updateProfile(user.id, updates)
+    let updateErr = null;
+    
+    // If user has NO profile row, we CREATE instead of update
+    if (!profile) {
+      const { error } = await createProfile(user.id, username, finalAvatarUrl)
+      updateErr = error
+    } else {
+      const { error } = await updateProfile(user.id, updates)
+      updateErr = error
+    }
+    
     setSaving(false)
 
     if (updateErr) {
@@ -151,13 +161,18 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  if (!profile) {
+  if (authLoading) {
     return (
       <div className="max-w-xl mx-auto py-12 text-center">
         <Loader2 size={24} className="animate-spin text-text-secondary mx-auto" />
         <p className="text-sm text-text-secondary mt-3">Loading profile…</p>
       </div>
     )
+  }
+
+  if (!profile) {
+    // We will render the form, but display a message at the top
+    // The handleSave function is now smart enough to create the profile row if missing.
   }
 
   const currentAvatarDisplay = customPreview ?? avatarUrl
@@ -168,6 +183,12 @@ export default function ProfilePage() {
         <h2 className="text-xl font-bold text-text-primary">Edit Profile</h2>
         <p className="text-sm text-text-secondary mt-0.5">Manage your GrindSpace identity</p>
       </div>
+
+      {!profile && !authLoading && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-sm font-medium">
+          Profile not found — create one by entering your username and saving below.
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-border shadow-card p-6 space-y-6">
 
