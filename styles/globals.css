@@ -1,37 +1,47 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
 
-  --color-background: #ffffff;
-  --color-surface: #f8fafc;
-  --color-border: #e5e7eb;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #64748b;
-  --color-accent: #6366f1;
-  --color-accent-hover: #4f46e5;
-  --color-accent-light: #eef2ff;
+  /* ─── Neumorphic Color System ─── */
+  --color-background: #E8EAF0;
+  --color-surface: #E8EAF0;
+  --color-border: transparent;
+  --color-text-primary: #3B3F5C;
+  --color-text-secondary: #7B80A0;
+  --color-text-label: #A8ABBE;
+  --color-accent: #7C6FF7;
+  --color-accent-hover: #5B51E0;
+  --color-accent-light: rgba(125, 111, 247, 0.12);
 
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.06);
-  --shadow-button: 0 1px 2px 0 rgba(99, 102, 241, 0.2);
-  --shadow-button-hover: 0 4px 12px 0 rgba(99, 102, 241, 0.35);
+  /* ─── Neumorphic Shadows ─── */
+  --shadow-neu: 6px 6px 16px #C5C8D6, -6px -6px 16px #FFFFFF;
+  --shadow-neu-hover: 8px 8px 20px #C5C8D6, -8px -8px 20px #FFFFFF;
+  --shadow-neu-inset: inset 4px 4px 10px #C5C8D6, inset -4px -4px 10px #FFFFFF;
+  --shadow-neu-sm: 4px 4px 10px #C5C8D6, -4px -4px 10px #FFFFFF;
+  --shadow-neu-lg: 10px 10px 30px #C5C8D6, -10px -10px 30px #FFFFFF;
+  --shadow-neu-accent: 5px 5px 14px rgba(92, 81, 224, 0.35), -2px -2px 6px rgba(255, 255, 255, 0.6);
+
+  /* Legacy aliases for compat */
+  --shadow-card: 6px 6px 16px #C5C8D6, -6px -6px 16px #FFFFFF;
+  --shadow-card-hover: 8px 8px 20px #C5C8D6, -8px -8px 20px #FFFFFF;
+  --shadow-button: 5px 5px 14px rgba(92, 81, 224, 0.35), -2px -2px 6px rgba(255, 255, 255, 0.6);
+  --shadow-button-hover: 6px 6px 18px rgba(92, 81, 224, 0.45), -3px -3px 8px rgba(255, 255, 255, 0.7);
 
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
-  --animate-fade-slide-up: fadeSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  --animate-fade-slide-up: neuFadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   --animate-fade-in: fadeIn 0.3s ease forwards;
 
   --radius-xl: 12px;
-  --radius-2xl: 16px;
+  --radius-2xl: 18px;
 }
 
-@keyframes fadeSlideUp {
+@keyframes neuFadeUp {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -39,13 +49,12 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-  to {
-    opacity: 1;
-  }
+@keyframes progressGrow {
+  from { width: 0%; }
 }
 
 * {
@@ -56,66 +65,85 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: #E8EAF0;
+  color: #3B3F5C;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
+/* Scrollbar — subtle on neumorphic base */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #E8EAF0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+  background: #C5C8D6;
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
+  background: #A8ABBE;
 }
 
 /* Stagger utility classes */
-.stagger-1 {
-  animation-delay: 50ms;
-}
-
-.stagger-2 {
-  animation-delay: 100ms;
-}
-
-.stagger-3 {
-  animation-delay: 150ms;
-}
-
-.stagger-4 {
-  animation-delay: 200ms;
-}
-
-.stagger-5 {
-  animation-delay: 250ms;
-}
-
-.stagger-6 {
-  animation-delay: 300ms;
-}
-
-.stagger-7 {
-  animation-delay: 350ms;
-}
-
-.stagger-8 {
-  animation-delay: 400ms;
-}
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+.stagger-7 { animation-delay: 350ms; }
+.stagger-8 { animation-delay: 400ms; }
 
 /* Ease smooth utility */
 .ease-smooth {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Neumorphic Utility Classes ─── */
+.neu-raised {
+  background: #E8EAF0;
+  box-shadow: 6px 6px 16px #C5C8D6, -6px -6px 16px #FFFFFF;
+}
+
+.neu-raised-hover:hover {
+  box-shadow: 8px 8px 20px #C5C8D6, -8px -8px 20px #FFFFFF;
+  transform: translateY(-2px);
+}
+
+.neu-inset {
+  background: #E8EAF0;
+  box-shadow: inset 4px 4px 10px #C5C8D6, inset -4px -4px 10px #FFFFFF;
+}
+
+.neu-sm {
+  box-shadow: 4px 4px 10px #C5C8D6, -4px -4px 10px #FFFFFF;
+}
+
+.neu-accent-gradient {
+  background: linear-gradient(135deg, #9D93F9, #7C6FF7, #5B51E0);
+}
+
+.neu-accent-shadow {
+  box-shadow: 5px 5px 14px rgba(92, 81, 224, 0.35), -2px -2px 6px rgba(255, 255, 255, 0.6);
+}
+
+/* Neumorphic input base */
+.neu-input {
+  background: #E8EAF0;
+  border: none;
+  box-shadow: inset 4px 4px 10px #C5C8D6, inset -4px -4px 10px #FFFFFF;
+  border-radius: 12px;
+  outline: none;
+  transition: box-shadow 0.2s ease;
+}
+
+.neu-input:focus {
+  box-shadow: inset 5px 5px 14px #C5C8D6, inset -5px -5px 14px #FFFFFF;
 }

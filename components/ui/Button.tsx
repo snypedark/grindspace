@@ -11,16 +11,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<Variant, string> = {
     primary:
-        "bg-accent text-white border-transparent shadow-[0_1px_2px_rgba(99,102,241,0.2)] hover:bg-accent-hover hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]",
+        "bg-gradient-to-br from-[#9D93F9] via-[#7C6FF7] to-[#5B51E0] text-white shadow-neu-accent hover:shadow-[6px_6px_18px_rgba(92,81,224,0.45),-3px_-3px_8px_rgba(255,255,255,0.7)]",
     secondary:
-        "bg-white text-text-primary border-border shadow-card hover:shadow-card-hover hover:bg-surface",
+        "bg-[#E8EAF0] text-[#3B3F5C] shadow-neu hover:shadow-neu-hover active:shadow-neu-inset",
     ghost:
-        "bg-transparent text-text-secondary border-transparent hover:bg-surface hover:text-text-primary",
+        "bg-[#E8EAF0] text-[#7B80A0] shadow-neu-sm hover:shadow-neu hover:text-[#3B3F5C] active:shadow-neu-inset",
 };
 
 const sizeStyles: Record<Size, string> = {
-    sm: "px-3 py-1.5 text-xs gap-1.5",
-    md: "px-4 py-2 text-sm gap-2",
+    sm: "px-3.5 py-1.5 text-xs gap-1.5",
+    md: "px-5 py-2.5 text-sm gap-2",
     lg: "px-6 py-3 text-base gap-2.5",
 };
 
@@ -30,11 +30,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <button
                 ref={ref}
                 className={clsx(
-                    "inline-flex items-center justify-center font-medium rounded-xl border",
-                    "transition-all duration-200 ease-smooth cursor-pointer",
-                    "active:scale-95 hover:scale-[1.02]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
-                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
+                    "inline-flex items-center justify-center font-bold rounded-xl",
+                    "transition-all duration-220 ease-smooth cursor-pointer",
+                    "hover:scale-[1.02] hover:-translate-y-0.5",
+                    "active:scale-[0.98] active:translate-y-0",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C6FF7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E8EAF0]",
+                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0",
                     variantStyles[variant],
                     sizeStyles[size],
                     className

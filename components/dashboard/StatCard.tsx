@@ -7,11 +7,32 @@ import { ReactNode } from 'react'
 interface StatCardProps {
   label: string
   value: string | number
-  numericValue?: number   // for count-up animation
+  numericValue?: number
   icon: ReactNode
   trend?: { value: string; positive: boolean }
   accent?: boolean
+  iconGradient?: string
+  iconShadow?: string
   className?: string
+}
+
+const ICON_STYLES = {
+  purple: {
+    gradient: "linear-gradient(135deg, #9D93F9, #7C6FF7, #5B51E0)",
+    shadow: "4px 4px 10px rgba(92,81,224,0.25), -2px -2px 6px rgba(255,255,255,0.6)",
+  },
+  green: {
+    gradient: "linear-gradient(135deg, #7EDCB5, #5EC8A0, #3DB889)",
+    shadow: "4px 4px 10px rgba(94,200,160,0.25), -2px -2px 6px rgba(255,255,255,0.6)",
+  },
+  orange: {
+    gradient: "linear-gradient(135deg, #FFB88C, #F7A97C, #E8926A)",
+    shadow: "4px 4px 10px rgba(247,169,124,0.25), -2px -2px 6px rgba(255,255,255,0.6)",
+  },
+  pink: {
+    gradient: "linear-gradient(135deg, #F5A0C0, #F07AAB, #E65A96)",
+    shadow: "4px 4px 10px rgba(240,122,171,0.25), -2px -2px 6px rgba(255,255,255,0.6)",
+  },
 }
 
 function useCountUp(target: number, duration = 1200) {
@@ -45,37 +66,38 @@ export function StatCard({
   icon,
   trend,
   accent = false,
+  iconGradient,
+  iconShadow,
   className,
 }: StatCardProps) {
   const animated = useCountUp(numericValue ?? 0)
   const displayValue = numericValue !== undefined ? animated.toLocaleString() : value
 
+  // Default to purple if no custom gradient
+  const gradientStyle = iconGradient || ICON_STYLES.purple.gradient
+  const shadowStyle = iconShadow || ICON_STYLES.purple.shadow
+
   return (
     <div
       className={clsx(
-        'group relative rounded-2xl border border-border bg-white p-5 shadow-card',
-        'transition-all duration-200 ease-smooth hover:-translate-y-1 hover:shadow-card-hover',
+        'group relative rounded-[18px] bg-[#E8EAF0] p-[22px] shadow-neu',
+        'transition-all duration-220 ease-smooth hover:-translate-y-0.5 hover:shadow-neu-hover',
         className
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-1">
+          <p className="text-[10px] font-bold text-[#A8ABBE] uppercase tracking-[0.1em] mb-1.5">
             {label}
           </p>
-          <p
-            className={clsx(
-              'text-2xl font-bold leading-tight',
-              accent ? 'text-accent' : 'text-text-primary'
-            )}
-          >
+          <p className="text-[30px] font-[900] leading-none tracking-[-0.04em] text-[#3B3F5C]">
             {numericValue !== undefined ? displayValue : value}
           </p>
           {trend && (
             <p
               className={clsx(
-                'text-xs mt-1 font-medium',
-                trend.positive ? 'text-emerald-500' : 'text-rose-500'
+                'text-xs mt-2 font-semibold',
+                trend.positive ? 'text-[#5EC8A0]' : 'text-[#F07A7A]'
               )}
             >
               {trend.positive ? '↑' : '↓'} {trend.value}
@@ -83,10 +105,11 @@ export function StatCard({
           )}
         </div>
         <div
-          className={clsx(
-            'flex items-center justify-center w-10 h-10 rounded-xl shrink-0',
-            accent ? 'bg-accent text-white' : 'bg-accent-light text-accent'
-          )}
+          className="flex items-center justify-center w-11 h-11 rounded-[10px] shrink-0 text-white"
+          style={{
+            background: gradientStyle,
+            boxShadow: shadowStyle,
+          }}
         >
           {icon}
         </div>
@@ -94,3 +117,6 @@ export function StatCard({
     </div>
   )
 }
+
+// Export icon styles for external use
+export { ICON_STYLES }

@@ -6,16 +6,16 @@ interface ActivityFeedProps {
   username?: string
 }
 
-const SKILL_COLORS: Record<string, string> = {
-  Coding: 'bg-indigo-100 text-indigo-700',
-  Design: 'bg-purple-100 text-purple-700',
-  Writing: 'bg-emerald-100 text-emerald-700',
-  Math: 'bg-amber-100 text-amber-700',
-  Research: 'bg-sky-100 text-sky-700',
-  Language: 'bg-pink-100 text-pink-700',
-  Music: 'bg-orange-100 text-orange-700',
-  Reading: 'bg-teal-100 text-teal-700',
-  Business: 'bg-lime-100 text-lime-700',
+const SKILL_GRADIENTS: Record<string, { gradient: string; text: string }> = {
+  Coding: { gradient: "linear-gradient(135deg, #9D93F9, #5B51E0)", text: "#7C6FF7" },
+  Design: { gradient: "linear-gradient(135deg, #F5A0C0, #E65A96)", text: "#F07AAB" },
+  Writing: { gradient: "linear-gradient(135deg, #7EDCB5, #3DB889)", text: "#5EC8A0" },
+  Math: { gradient: "linear-gradient(135deg, #FFB88C, #E8926A)", text: "#F7A97C" },
+  Research: { gradient: "linear-gradient(135deg, #88C8F7, #3A97E8)", text: "#5EB0F0" },
+  Language: { gradient: "linear-gradient(135deg, #F5A0C0, #E65A96)", text: "#F07AAB" },
+  Music: { gradient: "linear-gradient(135deg, #FFB88C, #E8926A)", text: "#F7A97C" },
+  Reading: { gradient: "linear-gradient(135deg, #7EDCB5, #3DB889)", text: "#5EC8A0" },
+  Business: { gradient: "linear-gradient(135deg, #88C8F7, #3A97E8)", text: "#5EB0F0" },
 }
 
 function timeAgo(dateStr: string): string {
@@ -34,42 +34,47 @@ export function ActivityFeed({ sessions, username = 'You' }: ActivityFeedProps) 
   if (sessions.length === 0) {
     return (
       <div className="text-center py-6">
-        <p className="text-sm text-text-secondary">No sessions yet — log your first one!</p>
+        <p className="text-sm font-semibold text-[#7B80A0]">No sessions yet — log your first one!</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-3">
-      {sessions.slice(0, 5).map((item, i) => (
-        <div
-          key={item.id}
-          className="flex items-start gap-3 animate-fade-slide-up"
-          style={{ animationDelay: `${i * 60}ms` }}
-        >
-          <Avatar name={username} size="sm" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                  SKILL_COLORS[item.skill] ?? 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                {item.skill}
-              </span>
-              <span className="text-xs font-medium text-text-primary">
-                {Math.round(item.duration_minutes / 60 * 10) / 10}h logged
-              </span>
-              <span className="text-xs text-text-secondary ml-auto">
-                {timeAgo(item.created_at)}
-              </span>
+      {sessions.slice(0, 5).map((item, i) => {
+        const skillStyle = SKILL_GRADIENTS[item.skill]
+        return (
+          <div
+            key={item.id}
+            className="flex items-start gap-3 animate-fade-slide-up"
+            style={{ animationDelay: `${i * 60}ms` }}
+          >
+            <Avatar name={username} size="sm" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#E8EAF0]"
+                  style={{
+                    boxShadow: "3px 3px 8px #C5C8D6, -3px -3px 8px #FFFFFF",
+                    color: skillStyle?.text ?? "#7B80A0",
+                  }}
+                >
+                  {item.skill}
+                </span>
+                <span className="text-xs font-bold text-[#3B3F5C]">
+                  {Math.round(item.duration_minutes / 60 * 10) / 10}h logged
+                </span>
+                <span className="text-xs font-semibold text-[#A8ABBE] ml-auto">
+                  {timeAgo(item.created_at)}
+                </span>
+              </div>
+              {item.note && (
+                <p className="text-xs text-[#7B80A0] mt-0.5 truncate font-medium">{item.note}</p>
+              )}
             </div>
-            {item.note && (
-              <p className="text-xs text-text-secondary mt-0.5 truncate">{item.note}</p>
-            )}
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

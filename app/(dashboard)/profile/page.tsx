@@ -20,24 +20,20 @@ const AVATAR_PRESETS = [
 export default function ProfilePage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth()
 
-  // Form state
   const [username, setUsername] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [customFile, setCustomFile] = useState<File | null>(null)
   const [customPreview, setCustomPreview] = useState<string | null>(null)
 
-  // Validation state
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null)
 
-  // UI state
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Initialize form from profile
   useEffect(() => {
     if (profile) {
       setUsername(profile.username ?? '')
@@ -45,7 +41,6 @@ export default function ProfilePage() {
     }
   }, [profile])
 
-  // Debounced username check
   useEffect(() => {
     if (!username || username === profile?.username) {
       setIsUsernameAvailable(null)
@@ -98,7 +93,6 @@ export default function ProfilePage() {
     setError(null)
     setSaved(false)
 
-    // Validate username
     if (username.length < 3) {
       setError('Username must be at least 3 characters.')
       return
@@ -112,7 +106,6 @@ export default function ProfilePage() {
 
     let finalAvatarUrl = avatarUrl
 
-    // Upload custom file if selected
     if (customFile) {
       const { url, error: uploadErr } = await uploadAvatar(user.id, customFile)
       if (uploadErr) {
@@ -123,7 +116,6 @@ export default function ProfilePage() {
       finalAvatarUrl = url
     }
 
-    // Build update payload — only include changed fields
     const updates: Record<string, string | null> = {}
     if (username !== profile?.username) updates.username = username
     if (finalAvatarUrl !== profile?.avatar_url) updates.avatar_url = finalAvatarUrl
@@ -137,7 +129,6 @@ export default function ProfilePage() {
 
     let updateErr = null;
     
-    // If user has NO profile row, we CREATE instead of update
     if (!profile) {
       const { error } = await createProfile(user.id, username, finalAvatarUrl)
       updateErr = error
@@ -153,7 +144,6 @@ export default function ProfilePage() {
       return
     }
 
-    // Sync profile to AuthContext so Topbar updates instantly
     await refreshProfile()
     setCustomFile(null)
     setCustomPreview(null)
@@ -164,15 +154,14 @@ export default function ProfilePage() {
   if (authLoading) {
     return (
       <div className="max-w-xl mx-auto py-12 text-center">
-        <Loader2 size={24} className="animate-spin text-text-secondary mx-auto" />
-        <p className="text-sm text-text-secondary mt-3">Loading profile…</p>
+        <Loader2 size={24} className="animate-spin text-[#7B80A0] mx-auto" />
+        <p className="text-sm font-semibold text-[#7B80A0] mt-3">Loading profile…</p>
       </div>
     )
   }
 
   if (!profile) {
-    // We will render the form, but display a message at the top
-    // The handleSave function is now smart enough to create the profile row if missing.
+    // Form still renders below with a creation notice
   }
 
   const currentAvatarDisplay = customPreview ?? avatarUrl
@@ -180,26 +169,24 @@ export default function ProfilePage() {
   return (
     <div className="max-w-xl mx-auto space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-text-primary">Edit Profile</h2>
-        <p className="text-sm text-text-secondary mt-0.5">Manage your GrindSpace identity</p>
+        <h2 className="text-[22px] font-[900] text-[#3B3F5C] tracking-[-0.03em]">Edit Profile</h2>
+        <p className="text-[13px] font-medium text-[#7B80A0] mt-0.5">Manage your GrindSpace identity</p>
       </div>
 
       {!profile && !authLoading && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-sm font-medium">
+        <div className="bg-[#E8EAF0] shadow-neu-sm text-[#F7A97C] px-4 py-3 rounded-[18px] text-sm font-bold">
           Profile not found — create one by entering your username and saving below.
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-border shadow-card p-6 space-y-6">
+      <div className="bg-[#E8EAF0] rounded-[18px] shadow-neu p-6 space-y-6">
 
         {/* Avatar Section */}
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-3">Avatar</label>
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-3">Avatar</label>
           <div className="flex items-center gap-5">
-            {/* Current Preview */}
             <Avatar src={currentAvatarDisplay} name={username} size="xl" />
 
-            {/* Presets + Upload */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
                 {AVATAR_PRESETS.map((preset) => (
@@ -207,19 +194,21 @@ export default function ProfilePage() {
                     key={preset}
                     type="button"
                     onClick={() => selectPreset(preset)}
-                    className={clsx(
-                      "w-9 h-9 rounded-full overflow-hidden border-2 shrink-0 select-none transition-all",
-                      avatarUrl === preset && !customPreview
-                        ? "border-accent scale-110"
-                        : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
-                    )}
+                    className="w-9 h-9 rounded-full overflow-hidden shrink-0 select-none transition-all"
+                    style={{
+                      boxShadow: avatarUrl === preset && !customPreview
+                        ? "4px 4px 10px rgba(92,81,224,0.3), -2px -2px 6px rgba(255,255,255,0.6)"
+                        : "3px 3px 8px #C5C8D6, -3px -3px 8px #FFFFFF",
+                      transform: avatarUrl === preset && !customPreview ? "scale(1.12)" : undefined,
+                      opacity: avatarUrl === preset && !customPreview ? 1 : 0.6,
+                    }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={preset} alt="preset" className="w-full h-full object-cover" />
                   </button>
                 ))}
 
-                <div className="w-px h-5 bg-border mx-0.5 shrink-0" />
+                <div className="w-px h-5 bg-[#E8EAF0] mx-0.5 shrink-0" style={{ boxShadow: "inset 1px 1px 2px #C5C8D6, inset -1px -1px 2px #FFFFFF" }} />
 
                 <input
                   type="file"
@@ -231,12 +220,15 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className={clsx(
-                    "flex items-center justify-center w-9 h-9 rounded-full border-2 border-dashed shrink-0 transition-all",
-                    customPreview
-                      ? "border-accent scale-110 overflow-hidden"
-                      : "border-border hover:border-text-secondary text-text-secondary bg-surface"
-                  )}
+                  className="flex items-center justify-center w-9 h-9 rounded-full shrink-0 transition-all text-[#7B80A0]"
+                  style={{
+                    boxShadow: customPreview
+                      ? "4px 4px 10px rgba(92,81,224,0.3), -2px -2px 6px rgba(255,255,255,0.6)"
+                      : "inset 3px 3px 8px #C5C8D6, inset -3px -3px 8px #FFFFFF",
+                    background: "#E8EAF0",
+                    overflow: customPreview ? "hidden" : undefined,
+                    transform: customPreview ? "scale(1.12)" : undefined,
+                  }}
                 >
                   {customPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -252,7 +244,7 @@ export default function ProfilePage() {
 
         {/* Username */}
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1.5">Username</label>
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">Username</label>
           <div className="relative">
             <input
               type="text"
@@ -260,52 +252,43 @@ export default function ProfilePage() {
               onChange={(e) => setUsername(e.target.value)}
               minLength={3}
               maxLength={20}
-              className={clsx(
-                "w-full border rounded-xl px-3 py-2.5 pr-10 text-sm bg-white placeholder:text-text-secondary focus:outline-none focus:ring-2 transition-all duration-150",
-                isUsernameAvailable === false
-                  ? "border-red-300 focus:ring-red-500"
-                  : isUsernameAvailable === true
-                    ? "border-emerald-300 focus:ring-emerald-500"
-                    : "border-border focus:ring-accent"
-              )}
+              className="neu-input w-full px-3 py-2.5 pr-10 text-sm font-semibold text-[#3B3F5C]"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               {isCheckingUsername ? (
-                <Loader2 size={15} className="animate-spin text-text-secondary" />
+                <Loader2 size={15} className="animate-spin text-[#A8ABBE]" />
               ) : isUsernameAvailable === true ? (
-                <CheckCircle2 size={15} className="text-emerald-500" />
+                <CheckCircle2 size={15} className="text-[#5EC8A0]" />
               ) : isUsernameAvailable === false ? (
-                <XCircle size={15} className="text-red-500" />
+                <XCircle size={15} className="text-[#F07A7A]" />
               ) : null}
             </div>
           </div>
           {isUsernameAvailable === false && (
-            <p className="text-[10px] text-red-500 mt-1 font-medium">Username already taken</p>
+            <p className="text-[10px] text-[#F07A7A] mt-1 font-bold">Username already taken</p>
           )}
           {isUsernameAvailable === true && (
-            <p className="text-[10px] text-emerald-500 mt-1 font-medium">Username available</p>
+            <p className="text-[10px] text-[#5EC8A0] mt-1 font-bold">Username available</p>
           )}
         </div>
 
         {/* Email (read-only) */}
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1.5">Email</label>
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">Email</label>
           <input
             type="email"
             value={user?.email ?? ''}
             readOnly
-            className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-text-secondary bg-gray-50 cursor-not-allowed"
+            className="neu-input w-full px-3 py-2.5 text-sm text-[#A8ABBE] font-semibold cursor-not-allowed"
           />
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 text-xs rounded-xl px-3 py-2.5">
+          <div className="bg-[#E8EAF0] shadow-neu-sm text-[#F07A7A] text-xs font-semibold rounded-xl px-3 py-2.5">
             {error}
           </div>
         )}
 
-        {/* Save */}
         <Button
           onClick={handleSave}
           className="w-full justify-center gap-2"

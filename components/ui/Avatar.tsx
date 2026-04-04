@@ -30,10 +30,17 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
         <div
             className={clsx(
                 "relative flex items-center justify-center rounded-full overflow-hidden shrink-0",
-                "bg-accent-light text-accent font-semibold select-none",
+                "font-bold select-none",
                 sizes[size],
                 className
             )}
+            style={{
+                background: src
+                    ? "#E8EAF0"
+                    : "linear-gradient(135deg, #9D93F9, #7C6FF7, #5B51E0)",
+                boxShadow: "4px 4px 10px #C5C8D6, -4px -4px 10px #FFFFFF",
+                color: src ? undefined : "#FFFFFF",
+            }}
         >
             {src ? (
                 // eslint-disable-next-line @next/next/no-img-element

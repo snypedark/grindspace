@@ -9,38 +9,45 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
-                background: "#FFFFFF",
-                surface: "#F8FAFC",
-                border: "#E5E7EB",
-                "text-primary": "#0F172A",
-                "text-secondary": "#64748B",
-                accent: "#6366F1",
-                "accent-hover": "#4F46E5",
-                "accent-light": "#EEF2FF",
+                background: "#E8EAF0",
+                surface: "#E8EAF0",
+                border: "transparent",
+                "text-primary": "#3B3F5C",
+                "text-secondary": "#7B80A0",
+                "text-label": "#A8ABBE",
+                accent: "#7C6FF7",
+                "accent-hover": "#5B51E0",
+                "accent-light": "rgba(125,111,247,0.12)",
             },
             fontFamily: {
-                sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+                sans: ["var(--font-nunito)", "system-ui", "sans-serif"],
             },
             borderRadius: {
-                "2xl": "16px",
+                "2xl": "18px",
                 xl: "12px",
+                lg: "10px",
             },
             boxShadow: {
-                card: "0 1px 3px 0 rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.04)",
-                "card-hover": "0 8px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -5px rgba(0,0,0,0.06)",
-                button: "0 1px 2px 0 rgba(99,102,241,0.2)",
-                "button-hover": "0 4px 12px 0 rgba(99,102,241,0.35)",
+                neu: "6px 6px 16px #C5C8D6, -6px -6px 16px #FFFFFF",
+                "neu-hover": "8px 8px 20px #C5C8D6, -8px -8px 20px #FFFFFF",
+                "neu-inset": "inset 4px 4px 10px #C5C8D6, inset -4px -4px 10px #FFFFFF",
+                "neu-sm": "4px 4px 10px #C5C8D6, -4px -4px 10px #FFFFFF",
+                "neu-lg": "10px 10px 30px #C5C8D6, -10px -10px 30px #FFFFFF",
+                "neu-accent": "5px 5px 14px rgba(92,81,224,0.35), -2px -2px 6px rgba(255,255,255,0.6)",
+                // Legacy compat
+                card: "6px 6px 16px #C5C8D6, -6px -6px 16px #FFFFFF",
+                "card-hover": "8px 8px 20px #C5C8D6, -8px -8px 20px #FFFFFF",
             },
             transitionTimingFunction: {
                 smooth: "cubic-bezier(0.4, 0, 0.2, 1)",
             },
             animation: {
-                "fade-slide-up": "fadeSlideUp 0.4s ease forwards",
+                "fade-slide-up": "neuFadeUp 0.5s ease forwards",
                 "fade-in": "fadeIn 0.3s ease forwards",
             },
             keyframes: {
-                fadeSlideUp: {
-                    "0%": { opacity: "0", transform: "translateY(12px)" },
+                neuFadeUp: {
+                    "0%": { opacity: "0", transform: "translateY(16px)" },
                     "100%": { opacity: "1", transform: "translateY(0)" },
                 },
                 fadeIn: {

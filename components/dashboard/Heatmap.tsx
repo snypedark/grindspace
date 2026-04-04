@@ -3,23 +3,28 @@
 import { clsx } from 'clsx'
 
 interface HeatmapProps {
-  data?: Record<string, number> // date string (YYYY-MM-DD) → intensity 0–4
+  data?: Record<string, number>
 }
 
-const INTENSITY_CLASSES = [
-  'bg-gray-100',
-  'bg-indigo-100',
-  'bg-indigo-200',
-  'bg-indigo-400',
-  'bg-indigo-600',
-]
-
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+// Intensity level styles for neumorphic heatmap
+const INTENSITY_STYLES = [
+  // Level 0: empty cell — inset
+  { bg: '#E8EAF0', shadow: 'inset 2px 2px 5px #C5C8D6, inset -2px -2px 5px #FFFFFF' },
+  // Level 1: lightest purple — raised
+  { bg: '#DDD8FF', shadow: '2px 2px 5px #C5C8D6, -2px -2px 5px #FFFFFF' },
+  // Level 2: medium purple — raised + glow
+  { bg: '#C4BBFF', shadow: '2px 2px 5px #C5C8D6, -2px -2px 5px #FFFFFF, 0 0 4px rgba(125,111,247,0.2)' },
+  // Level 3: saturated purple — raised + stronger glow
+  { bg: '#9D93F9', shadow: '2px 2px 5px #C5C8D6, -2px -2px 5px #FFFFFF, 0 0 6px rgba(125,111,247,0.35)' },
+  // Level 4: deep purple — raised + max glow
+  { bg: '#7C6FF7', shadow: '2px 2px 5px #C5C8D6, -2px -2px 5px #FFFFFF, 0 0 8px rgba(125,111,247,0.5)' },
+]
 
 function getLast52Weeks(): { date: string; week: number; day: number }[] {
   const result = []
   const today = new Date()
-  // Start from 52 weeks ago, aligned to Monday
   const start = new Date(today)
   start.setDate(today.getDate() - 363)
   const dayOfWeek = start.getDay() === 0 ? 6 : start.getDay() - 1
@@ -48,8 +53,8 @@ export function Heatmap({ data = {} }: HeatmapProps) {
         {/* Day labels */}
         <div className="flex flex-col gap-px pt-5">
           {['M', '', 'W', '', 'F', '', ''].map((d, i) => (
-            <div key={i} className="h-3 w-4 flex items-center justify-end">
-              <span className="text-[9px] text-text-secondary">{d}</span>
+            <div key={i} className="h-[13px] w-4 flex items-center justify-end">
+              <span className="text-[9px] font-bold text-[#A8ABBE]">{d}</span>
             </div>
           ))}
         </div>
@@ -61,9 +66,9 @@ export function Heatmap({ data = {} }: HeatmapProps) {
               const cell = CELLS[w * 7]
               const date = new Date(cell.date)
               return (
-                <div key={w} className="w-3 flex items-center justify-start">
+                <div key={w} className="w-[13px] flex items-center justify-start">
                   {(date.getDate() <= 7) && (
-                    <span className="text-[9px] text-text-secondary whitespace-nowrap">
+                    <span className="text-[9px] font-bold text-[#A8ABBE] whitespace-nowrap">
                       {MONTHS[date.getMonth()]}
                     </span>
                   )}
@@ -72,24 +77,31 @@ export function Heatmap({ data = {} }: HeatmapProps) {
             })}
           </div>
 
-          {/* Grid — 7 rows × 52 cols */}
+          {/* Grid */}
           <div
-            className="grid gap-px"
+            className="grid gap-[2px]"
             style={{
-              gridTemplateColumns: 'repeat(52, 12px)',
-              gridTemplateRows: 'repeat(7, 12px)',
+              gridTemplateColumns: 'repeat(52, 13px)',
+              gridTemplateRows: 'repeat(7, 13px)',
             }}
           >
             {CELLS.map((cell) => {
               const level = data[cell.date] ?? 0
+              const style = INTENSITY_STYLES[level]
               return (
                 <div
                   key={cell.date}
-                  style={{ gridColumn: cell.week + 1, gridRow: cell.day + 1 }}
-                  className={clsx(
-                    'w-3 h-3 rounded-sm transition-transform duration-100 hover:scale-110 cursor-pointer',
-                    INTENSITY_CLASSES[level]
-                  )}
+                  style={{
+                    gridColumn: cell.week + 1,
+                    gridRow: cell.day + 1,
+                    width: 13,
+                    height: 13,
+                    borderRadius: 4,
+                    background: style.bg,
+                    boxShadow: style.shadow,
+                    transition: 'transform 0.1s ease',
+                  }}
+                  className="hover:scale-125 cursor-pointer"
                   title={`${cell.date}${level > 0 ? ` · ${level * 30}+ min` : ' · No session'}`}
                 />
               )
@@ -99,12 +111,21 @@ export function Heatmap({ data = {} }: HeatmapProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-1.5 mt-3 justify-end">
-        <span className="text-[10px] text-text-secondary">Less</span>
-        {INTENSITY_CLASSES.map((cls, i) => (
-          <div key={i} className={clsx('w-3 h-3 rounded-sm', cls)} />
+      <div className="flex items-center gap-2 mt-3 justify-end">
+        <span className="text-[10px] font-bold text-[#A8ABBE]">Less</span>
+        {INTENSITY_STYLES.map((style, i) => (
+          <div
+            key={i}
+            style={{
+              width: 13,
+              height: 13,
+              borderRadius: 4,
+              background: style.bg,
+              boxShadow: style.shadow,
+            }}
+          />
         ))}
-        <span className="text-[10px] text-text-secondary">More</span>
+        <span className="text-[10px] font-bold text-[#A8ABBE]">More</span>
       </div>
     </div>
   )

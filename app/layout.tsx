@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import '../styles/globals.css'
 import { AuthProvider } from '@/lib/AuthContext'
 
-const inter = Inter({
+const nunito = Nunito({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-nunito',
   display: 'swap',
+  weight: ['400', '600', '700', '800', '900'],
 })
 
 export const metadata: Metadata = {
@@ -20,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-background text-text-primary antialiased">
+    <html lang="en" className={nunito.variable}>
+      <body className="bg-[#E8EAF0] text-[#3B3F5C] antialiased font-sans">
         <AuthProvider>
           {children}
         </AuthProvider>

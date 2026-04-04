@@ -14,7 +14,6 @@ function getGreeting(name: string) {
   const hour = new Date().getHours()
   const day = new Date().getDay()
 
-  // Mix of time-based and motivational greetings (deterministic by day/hour)
   if (day === 0 || day === 3 || day === 6) {
     if (hour < 12) return `Good morning, ${name} ☀️`
     if (hour < 17) return `Good afternoon, ${name} 🔥`
@@ -55,7 +54,6 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
 
   const displayName = profile?.username ?? user?.email?.split('@')[0] ?? 'User'
 
-  // Close avatar dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
@@ -88,46 +86,46 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
     console.log('[Topbar] logout clicked')
     setAvatarOpen(false)
     await signOut()
-    // signOut in AuthContext now does window.location.href = '/login'
-    // so no router needed here
   }
 
   const greeting = getGreeting(displayName)
 
   return (
     <>
-      <header className="sticky top-0 z-20 w-full h-16 bg-white/95 backdrop-blur-sm border-b border-border flex items-center px-6 gap-4">
+      <header
+        className="sticky top-0 z-20 w-full h-[68px] bg-[#E8EAF0] flex items-center px-6 gap-4"
+        style={{
+          boxShadow: "0 4px 12px #C5C8D6",
+        }}
+      >
         {/* Greeting */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h1 className="text-sm font-semibold text-text-primary whitespace-nowrap overflow-hidden text-ellipsis leading-tight">
+          <h1 className="text-sm font-bold text-[#3B3F5C] whitespace-nowrap overflow-hidden text-ellipsis leading-tight">
             {greeting}
           </h1>
-          <p className="text-xs text-text-secondary whitespace-nowrap overflow-hidden text-ellipsis">{formatDate()}</p>
+          <p className="text-xs font-medium text-[#7B80A0] whitespace-nowrap overflow-hidden text-ellipsis">{formatDate()}</p>
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Search */}
           <button
             onClick={() => console.log("search clicked")}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150 text-sm shrink-0"
+            className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-[#E8EAF0] shadow-neu-sm hover:shadow-neu-inset transition-all duration-200 text-[#7B80A0] hover:text-[#3B3F5C] shrink-0"
             aria-label="Search"
           >
             <Search size={16} />
-            <span className="hidden sm:inline text-xs text-text-secondary">Search…</span>
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-gray-100 text-text-secondary border border-border">⌘K</kbd>
+            <span className="hidden sm:inline text-xs font-semibold">Search…</span>
           </button>
 
           {/* Notifications */}
           <button
             onClick={() => console.log("notifications clicked")}
-            className="relative flex items-center justify-center w-9 h-9 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150 shrink-0"
+            className="flex items-center justify-center w-9 h-9 rounded-[10px] bg-[#E8EAF0] shadow-neu-sm hover:shadow-neu-inset transition-all duration-200 text-[#7B80A0] hover:text-[#3B3F5C] shrink-0"
             aria-label="Notifications"
           >
             <Bell size={16} />
           </button>
-
-          <div className="w-px h-6 bg-border mx-1" />
 
           {/* Log Session */}
           <Button onClick={() => setLogOpen(true)} size="sm" className="gap-1.5">
@@ -142,25 +140,30 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
               className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
             >
               <Avatar src={profile?.avatar_url} name={displayName} size="sm" />
-              <ChevronDown size={12} className="text-text-secondary" />
+              <ChevronDown size={12} className="text-[#7B80A0]" />
             </button>
             {avatarOpen && (
-              <div className="absolute right-0 top-11 bg-white border border-border rounded-xl shadow-card-hover min-w-[180px] py-1 z-50">
-                <div className="px-3 py-2 border-b border-border">
-                  <p className="text-xs font-semibold text-text-primary truncate">{displayName}</p>
-                  <p className="text-[10px] text-text-secondary truncate pt-0.5 opacity-80">{user?.email}</p>
+              <div
+                className="absolute right-0 top-12 bg-[#E8EAF0] rounded-[18px] shadow-neu-lg min-w-[180px] py-1.5 z-50"
+              >
+                <div className="px-3 py-2.5">
+                  <p className="text-xs font-bold text-[#3B3F5C] truncate">{displayName}</p>
+                  <p className="text-[10px] text-[#A8ABBE] truncate pt-0.5">{user?.email}</p>
                 </div>
+                <div className="mx-2 my-1 h-px bg-[#E8EAF0]" style={{ boxShadow: "inset 1px 1px 3px #C5C8D6, inset -1px -1px 3px #FFFFFF" }} />
                 <Link
                   href="/profile"
                   onClick={() => setAvatarOpen(false)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-text-primary hover:bg-surface transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-[#3B3F5C] hover:bg-[#E8EAF0] rounded-xl mx-0 transition-all"
+                  style={{ margin: "0 4px", width: "calc(100% - 8px)" }}
                 >
                   <UserIcon size={13} />
                   Edit Profile
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-500 hover:bg-red-50 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-[#F07A7A] hover:text-[#E05A5A] rounded-xl transition-all"
+                  style={{ margin: "0 4px", width: "calc(100% - 8px)" }}
                 >
                   <LogOut size={13} />
                   Sign out
@@ -175,17 +178,17 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
       <Modal isOpen={logOpen} onClose={() => setLogOpen(false)} title="Log a Session">
         <form onSubmit={handleLogSession} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">Skill</label>
+            <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">Skill</label>
             <select
               value={skill}
               onChange={(e) => setSkill(e.target.value)}
-              className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-150"
+              className="neu-input w-full px-3 py-2.5 text-sm text-[#3B3F5C] font-semibold appearance-none cursor-pointer"
             >
               {SKILLS.map((s) => <option key={s}>{s}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">
               Duration (minutes)
             </label>
             <input
@@ -195,11 +198,11 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
               step={5}
               value={minutes}
               onChange={(e) => setMinutes(Number(e.target.value))}
-              className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-150"
+              className="neu-input w-full px-3 py-2.5 text-sm text-[#3B3F5C] font-semibold"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">
               Note (optional)
             </label>
             <textarea
@@ -207,11 +210,13 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="What did you work on?"
-              className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text-primary bg-white focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-150 resize-none"
+              className="neu-input w-full px-3 py-2.5 text-sm text-[#3B3F5C] placeholder:text-[#A8ABBE] resize-none"
             />
           </div>
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 text-xs rounded-xl px-3 py-2">
+            <div
+              className="bg-[#E8EAF0] shadow-neu-sm text-[#F07A7A] text-xs font-semibold rounded-xl px-3 py-2.5"
+            >
               {error}
             </div>
           )}

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { signUp } from '@/lib/auth'
 import { checkUsernameAvailable, createProfile, uploadAvatar } from '@/lib/queries'
 import { Button } from '@/components/ui/Button'
-import { Eye, EyeOff, CheckCircle2, XCircle, Upload, Loader2, User as UserIcon } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle2, XCircle, Upload, Loader2 } from 'lucide-react'
 import { clsx } from 'clsx'
 
 const AVATAR_PRESETS = [
@@ -20,29 +20,23 @@ const AVATAR_PRESETS = [
 export default function SignupPage() {
   const router = useRouter()
   
-  // Form State
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-  
-  // UI State
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // Username Validation State
   const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null)
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   
-  // Avatar State
   const [selectedPreset, setSelectedPreset] = useState<string | null>(AVATAR_PRESETS[0])
   const [customAvatarFile, setCustomAvatarFile] = useState<File | null>(null)
   const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // ─── Username Debounce Validation ───
   useEffect(() => {
     if (!username) {
       setIsUsernameAvailable(null)
@@ -50,7 +44,6 @@ export default function SignupPage() {
       return
     }
     
-    // Clean string: lowercase, alphanumeric and underscores only
     const cleanUsername = username.toLowerCase().replace(/[^a-z0-9_]/g, '')
     if (cleanUsername !== username) {
       setUsername(cleanUsername)
@@ -62,12 +55,11 @@ export default function SignupPage() {
       const available = await checkUsernameAvailable(cleanUsername)
       setIsUsernameAvailable(available)
       setIsCheckingUsername(false)
-    }, 400) // 400ms debounce
+    }, 400)
 
     return () => clearTimeout(timeoutId)
   }, [username])
 
-  // ─── Handlers ───
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
@@ -98,7 +90,6 @@ export default function SignupPage() {
 
     setLoading(true)
 
-    // 1. Sign up user via Supabase Auth
     const { data: authData, error: authError } = await signUp(email, password)
     
     if (authError || !authData?.user) {
@@ -110,7 +101,6 @@ export default function SignupPage() {
     const userId = authData.user.id
     let finalAvatarUrl: string | null = selectedPreset
 
-    // 2. Upload custom avatar if exists
     if (customAvatarFile) {
       const { url, error: uploadErr } = await uploadAvatar(userId, customAvatarFile)
       if (uploadErr) {
@@ -120,14 +110,11 @@ export default function SignupPage() {
       }
     }
 
-    // 3. Insert into profiles table
     const { error: profileError } = await createProfile(userId, username, finalAvatarUrl)
 
     setLoading(false)
 
     if (profileError) {
-      // In a robust system, we might delete the auth user here if profile fails
-      // For now, we show the error.
       setError('Account created, but failed to setup profile: ' + profileError.message)
       return
     }
@@ -137,16 +124,20 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="bg-white rounded-2xl border border-border shadow-card p-6 text-center">
+      <div className="bg-[#E8EAF0] rounded-[18px] shadow-neu p-6 text-center">
         <div className="text-3xl mb-3">📬</div>
-        <h2 className="text-base font-bold text-text-primary mb-1">Welcome aboard, {username}!</h2>
-        <p className="text-sm text-text-secondary">
-          We sent a confirmation link to <span className="font-medium text-text-primary">{email}</span>.
+        <h2 className="text-base font-[900] text-[#3B3F5C] mb-1">Welcome aboard, {username}!</h2>
+        <p className="text-sm font-medium text-[#7B80A0]">
+          We sent a confirmation link to <span className="font-bold text-[#3B3F5C]">{email}</span>.
           Click it to verify your account and ignite your streak.
         </p>
         <Link
           href="/login"
-          className="block mt-6 px-4 py-2 bg-accent text-white font-medium rounded-xl hover:bg-accent-light hover:text-accent transition-colors text-sm"
+          className="block mt-6 px-4 py-2.5 rounded-xl text-sm font-bold text-white"
+          style={{
+            background: "linear-gradient(135deg, #9D93F9, #7C6FF7, #5B51E0)",
+            boxShadow: "5px 5px 14px rgba(92,81,224,0.35), -2px -2px 6px rgba(255,255,255,0.6)",
+          }}
         >
           Go to login
         </Link>
@@ -155,15 +146,15 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-border shadow-card p-6">
-      <h1 className="text-lg font-bold text-text-primary mb-1">Create account</h1>
-      <p className="text-sm text-text-secondary mb-6">Start tracking your grind today</p>
+    <div className="bg-[#E8EAF0] rounded-[18px] shadow-neu p-6">
+      <h1 className="text-lg font-[900] text-[#3B3F5C] mb-1 tracking-[-0.03em]">Create account</h1>
+      <p className="text-sm font-medium text-[#7B80A0] mb-6">Start tracking your grind today</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         
         {/* Username */}
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1.5">
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">
             Username
           </label>
           <div className="relative">
@@ -175,36 +166,29 @@ export default function SignupPage() {
               required
               minLength={3}
               maxLength={20}
-              className={clsx(
-                "w-full border rounded-xl px-3 py-2.5 pr-10 text-sm bg-white placeholder:text-text-secondary focus:outline-none focus:ring-2 transition-all duration-150",
-                isUsernameAvailable === false 
-                  ? "border-red-300 focus:ring-red-500 text-red-900" 
-                  : isUsernameAvailable === true
-                    ? "border-emerald-300 focus:ring-emerald-500 text-text-primary"
-                    : "border-border focus:ring-accent text-text-primary"
-              )}
+              className="neu-input w-full px-3 py-2.5 pr-10 text-sm font-semibold text-[#3B3F5C] placeholder:text-[#A8ABBE]"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
               {isCheckingUsername ? (
-                <Loader2 size={16} className="animate-spin text-text-secondary" />
+                <Loader2 size={16} className="animate-spin text-[#A8ABBE]" />
               ) : isUsernameAvailable === true ? (
-                <CheckCircle2 size={16} className="text-emerald-500" />
+                <CheckCircle2 size={16} className="text-[#5EC8A0]" />
               ) : isUsernameAvailable === false ? (
-                <XCircle size={16} className="text-red-500" />
+                <XCircle size={16} className="text-[#F07A7A]" />
               ) : null}
             </div>
           </div>
           {isUsernameAvailable === false && (
-            <p className="text-[10px] text-red-500 mt-1 font-medium">Username already taken</p>
+            <p className="text-[10px] text-[#F07A7A] mt-1 font-bold">Username already taken</p>
           )}
           {isUsernameAvailable === true && (
-            <p className="text-[10px] text-emerald-500 mt-1 font-medium">Username available!</p>
+            <p className="text-[10px] text-[#5EC8A0] mt-1 font-bold">Username available!</p>
           )}
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1.5">
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">
             Email
           </label>
           <input
@@ -213,13 +197,13 @@ export default function SignupPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
-            className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-text-primary bg-white placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-150"
+            className="neu-input w-full px-3 py-2.5 text-sm font-semibold text-[#3B3F5C] placeholder:text-[#A8ABBE]"
           />
         </div>
 
         {/* Password */}
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1.5">
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">
             Password
           </label>
           <div className="relative">
@@ -229,12 +213,12 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min. 6 characters"
               required
-              className="w-full border border-border rounded-xl px-3 py-2.5 pr-10 text-sm text-text-primary bg-white placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-150"
+              className="neu-input w-full px-3 py-2.5 pr-10 text-sm font-semibold text-[#3B3F5C] placeholder:text-[#A8ABBE]"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8ABBE] hover:text-[#3B3F5C] transition-colors"
             >
               {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
@@ -243,7 +227,7 @@ export default function SignupPage() {
 
         {/* Avatar Selection */}
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-2">
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-2.5">
             Choose Avatar
           </label>
           <div className="flex flex-wrap items-center gap-3">
@@ -256,21 +240,22 @@ export default function SignupPage() {
                   setCustomAvatarFile(null)
                   setCustomAvatarPreview(null)
                 }}
-                className={clsx(
-                  "w-10 h-10 rounded-full overflow-hidden border-2 transition-all duration-200 shrink-0 select-none",
-                  selectedPreset === preset 
-                    ? "border-accent scale-110 shadow-sm" 
-                    : "border-transparent hover:scale-105 opacity-70 hover:opacity-100"
-                )}
+                className="w-10 h-10 rounded-full overflow-hidden shrink-0 select-none transition-all duration-200"
+                style={{
+                  boxShadow: selectedPreset === preset
+                    ? "4px 4px 10px rgba(92,81,224,0.3), -2px -2px 6px rgba(255,255,255,0.6)"
+                    : "3px 3px 8px #C5C8D6, -3px -3px 8px #FFFFFF",
+                  transform: selectedPreset === preset ? "scale(1.12)" : undefined,
+                  opacity: selectedPreset === preset ? 1 : 0.7,
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={preset} alt="preset" className="w-full h-full object-cover" />
               </button>
             ))}
             
-            <div className="w-px h-6 bg-border mx-1 shrink-0" />
+            <div className="w-px h-6 bg-[#E8EAF0] mx-0.5 shrink-0" style={{ boxShadow: "inset 1px 1px 2px #C5C8D6, inset -1px -1px 2px #FFFFFF" }} />
             
-            {/* Custom Upload */}
             <input
               type="file"
               accept="image/*"
@@ -281,12 +266,15 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className={clsx(
-                "relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-dashed transition-all duration-200 shrink-0",
-                customAvatarPreview 
-                  ? "border-accent scale-110 shadow-sm overflow-hidden" 
-                  : "border-border hover:border-text-secondary text-text-secondary bg-surface"
-              )}
+              className="relative flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all duration-200 text-[#7B80A0]"
+              style={{
+                boxShadow: customAvatarPreview
+                  ? "4px 4px 10px rgba(92,81,224,0.3), -2px -2px 6px rgba(255,255,255,0.6)"
+                  : "inset 3px 3px 8px #C5C8D6, inset -3px -3px 8px #FFFFFF",
+                background: "#E8EAF0",
+                overflow: customAvatarPreview ? "hidden" : undefined,
+                transform: customAvatarPreview ? "scale(1.12)" : undefined,
+              }}
             >
               {customAvatarPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -299,7 +287,7 @@ export default function SignupPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 text-xs rounded-xl px-3 py-2.5">
+          <div className="bg-[#E8EAF0] shadow-neu-sm text-[#F07A7A] text-xs font-semibold rounded-xl px-3 py-2.5">
             {error}
           </div>
         )}
@@ -313,9 +301,9 @@ export default function SignupPage() {
         </Button>
       </form>
 
-      <p className="text-center text-xs text-text-secondary mt-5">
+      <p className="text-center text-xs font-semibold text-[#7B80A0] mt-5">
         Already have an account?{' '}
-        <Link href="/login" className="text-accent font-medium hover:underline">
+        <Link href="/login" className="bg-gradient-to-br from-[#9D93F9] to-[#5B51E0] bg-clip-text text-transparent hover:opacity-80 transition-opacity">
           Sign in
         </Link>
       </p>

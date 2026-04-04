@@ -2,7 +2,6 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { clsx } from "clsx";
-import { Button } from "./Button";
 
 interface ModalProps {
     isOpen: boolean;
@@ -32,28 +31,27 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
             onClick={(e) => e.target === overlayRef.current && onClose()}
         >
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm animate-fade-in" />
+            <div className="absolute inset-0 bg-[#3B3F5C]/20 backdrop-blur-sm animate-fade-in" />
 
             {/* Panel */}
             <div
                 className={clsx(
-                    "relative z-10 bg-white rounded-2xl shadow-card-hover border border-border",
+                    "relative z-10 bg-[#E8EAF0] rounded-[24px]",
+                    "shadow-neu-lg",
                     "w-full max-w-md p-6 animate-fade-slide-up",
                     className
                 )}
             >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                     {title && (
-                        <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+                        <h2 className="text-base font-bold text-[#3B3F5C]">{title}</h2>
                     )}
-                    <Button
-                        variant="ghost"
-                        size="sm"
+                    <button
                         onClick={onClose}
-                        className="ml-auto -mr-1 !p-1.5"
+                        className="ml-auto flex items-center justify-center w-8 h-8 rounded-[10px] bg-[#E8EAF0] shadow-neu-sm hover:shadow-neu-inset transition-all duration-200 text-[#7B80A0] hover:text-[#3B3F5C]"
                     >
                         <X className="w-4 h-4" />
-                    </Button>
+                    </button>
                 </div>
                 {children}
             </div>
