@@ -15,18 +15,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex min-h-screen bg-background">
       <Sidebar collapsed={collapsed} onToggle={toggle} />
-      <div
-        className={clsx(
-          'flex-1 flex flex-col min-h-screen',
-          'transition-all duration-300 ease-smooth',
-          collapsed ? 'ml-[72px]' : 'ml-[220px]'
-        )}
-      >
+      <div className="flex-1 flex flex-col min-w-0 relative">
         <Topbar onSessionLogged={handleSessionLogged} />
-        <main className="flex-1 pt-16 overflow-y-auto">
-          <div key={refreshKey} className="px-6 py-6">
+        <main className="flex-1 overflow-y-auto">
+          <div key={refreshKey} className="p-6">
             {children}
           </div>
         </main>

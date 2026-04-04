@@ -79,20 +79,21 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
 
   return (
     <>
-      <header className="fixed top-0 right-0 left-0 z-20 h-16 bg-white/95 backdrop-blur-sm border-b border-border flex items-center px-6 gap-4">
+      <header className="sticky top-0 z-20 w-full h-16 bg-white/95 backdrop-blur-sm border-b border-border flex items-center px-6 gap-4">
         {/* Greeting */}
-        <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold text-text-primary truncate">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <h1 className="text-sm font-semibold text-text-primary whitespace-nowrap overflow-hidden text-ellipsis">
             {getGreeting()}, {displayName} 👋
           </h1>
-          <p className="text-xs text-text-secondary">{formatDate()}</p>
+          <p className="text-xs text-text-secondary whitespace-nowrap overflow-hidden text-ellipsis">{formatDate()}</p>
         </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
           {/* Search */}
           <button
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150 text-sm"
+            onClick={() => console.log("clicked")}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150 text-sm shrink-0"
             aria-label="Search"
           >
             <Search size={16} />
@@ -102,7 +103,8 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
 
           {/* Notifications */}
           <button
-            className="relative flex items-center justify-center w-9 h-9 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150"
+            onClick={() => console.log("clicked")}
+            className="relative flex items-center justify-center w-9 h-9 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150 shrink-0"
             aria-label="Notifications"
           >
             <Bell size={16} />
