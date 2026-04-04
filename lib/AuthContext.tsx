@@ -11,7 +11,6 @@ import {
 import type { User } from '@supabase/supabase-js'
 import { createClient } from './supabase'
 import { getUserProfile } from './queries'
-import { signOut as authSignOut } from './auth'
 import type { Profile } from '@/types/user'
 
 interface AuthContextType {
@@ -19,6 +18,7 @@ interface AuthContextType {
   profile: Profile | null
   loading: boolean
   signOut: () => Promise<void>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,6 +26,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   signOut: async () => {},
+  refreshProfile: async () => {},
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -65,13 +66,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile, supabase.auth])
 
   const signOut = useCallback(async () => {
-    await authSignOut()
+    console.log('[AuthContext] signOut called')
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('[AuthContext] signOut error:', error.message)
+    }
     setUser(null)
     setProfile(null)
-  }, [])
+    console.log('[AuthContext] state cleared, redirecting...')
+    // Hard redirect to fully clear all client-side cache
+    window.location.href = '/login'
+  }, [supabase.auth])
+
+  const refreshProfile = useCallback(async () => {
+    if (user) {
+      await loadProfile(user.id)
+    }
+  }, [user, loadProfile])
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

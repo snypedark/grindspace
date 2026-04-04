@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Bell, Plus, LogOut, ChevronDown } from 'lucide-react'
+import { Search, Bell, Plus, LogOut, ChevronDown, User as UserIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
@@ -8,19 +8,19 @@ import { useAuth } from '@/lib/AuthContext'
 import { logSession } from '@/lib/queries'
 import { SKILLS } from '@/constants/skills'
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 function getGreeting(name: string) {
   const hour = new Date().getHours()
   const day = new Date().getDay()
-  
+
   // Mix of time-based and motivational greetings (deterministic by day/hour)
   if (day === 0 || day === 3 || day === 6) {
     if (hour < 12) return `Good morning, ${name} ☀️`
     if (hour < 17) return `Good afternoon, ${name} 🔥`
     return `Good evening, ${name} 🌙`
   }
-  
+
   const motivational = [
     `Stay sharp, ${name} 💪`,
     `Let's build today, ${name} 🚀`,
@@ -44,7 +44,6 @@ interface TopbarProps {
 
 export function Topbar({ onSessionLogged }: TopbarProps) {
   const { user, profile, signOut } = useAuth()
-  const router = useRouter()
   const [logOpen, setLogOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -86,13 +85,13 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
   }
 
   async function handleSignOut() {
+    console.log('[Topbar] logout clicked')
+    setAvatarOpen(false)
     await signOut()
-    router.push('/login')
-    router.refresh()
+    // signOut in AuthContext now does window.location.href = '/login'
+    // so no router needed here
   }
 
-  // To prevent hydration mismatches with time/date, we'll format them slightly safely
-  // or just accept we might get a minor hydration warning (though it's "use client").
   const greeting = getGreeting(displayName)
 
   return (
@@ -110,7 +109,7 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
         <div className="flex items-center gap-2">
           {/* Search */}
           <button
-            onClick={() => console.log("clicked")}
+            onClick={() => console.log("search clicked")}
             className="flex items-center gap-2 px-3 py-2 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150 text-sm shrink-0"
             aria-label="Search"
           >
@@ -121,7 +120,7 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
 
           {/* Notifications */}
           <button
-            onClick={() => console.log("clicked")}
+            onClick={() => console.log("notifications clicked")}
             className="relative flex items-center justify-center w-9 h-9 rounded-xl text-text-secondary hover:bg-surface hover:text-text-primary transition-all duration-150 shrink-0"
             aria-label="Notifications"
           >
@@ -146,11 +145,19 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
               <ChevronDown size={12} className="text-text-secondary" />
             </button>
             {avatarOpen && (
-              <div className="absolute right-0 top-11 bg-white border border-border rounded-xl shadow-card-hover min-w-[160px] py-1 z-50 animate-fade-slide-up">
+              <div className="absolute right-0 top-11 bg-white border border-border rounded-xl shadow-card-hover min-w-[180px] py-1 z-50">
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-xs font-semibold text-text-primary truncate">{displayName}</p>
                   <p className="text-[10px] text-text-secondary truncate pt-0.5 opacity-80">{user?.email}</p>
                 </div>
+                <Link
+                  href="/profile"
+                  onClick={() => setAvatarOpen(false)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-text-primary hover:bg-surface transition-colors"
+                >
+                  <UserIcon size={13} />
+                  Edit Profile
+                </Link>
                 <button
                   onClick={handleSignOut}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-500 hover:bg-red-50 transition-colors"
