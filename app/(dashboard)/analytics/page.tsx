@@ -24,10 +24,10 @@ export default function AnalyticsPage() {
   const totalHours = Math.round((stats.totalXP / 60) * 10) / 10
   const totalSessions = sessions.length
   const avgDuration = totalSessions > 0
-    ? Math.round(sessions.reduce((s, x) => s + x.duration_minutes, 0) / totalSessions)
+    ? Math.round(sessions.reduce((s, x) => s + x.duration_mins, 0) / totalSessions)
     : 0
   const longestSession = sessions.length > 0
-    ? Math.max(...sessions.map((s) => s.duration_minutes))
+    ? Math.max(...sessions.map((s) => s.duration_mins))
     : 0
 
   // Monthly hours (last 4 weeks)
@@ -43,10 +43,10 @@ export default function AnalyticsPage() {
 
     const mins = sessions
       .filter((s) => {
-        const d = new Date(s.created_at)
+        const d = new Date(s.logged_at)
         return d >= weekStart && d <= weekEnd
       })
-      .reduce((sum, s) => sum + s.duration_minutes, 0)
+      .reduce((sum, s) => sum + s.duration_mins, 0)
 
     const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     weeklyHoursData.push({ week: label, hours: Math.round((mins / 60) * 10) / 10 })

@@ -1,11 +1,11 @@
-export type FriendshipStatus = 'pending' | 'accepted'
+export type FriendshipStatus = 'pending' | 'accepted' | 'rejected'
 
 export type Friendship = {
   id: string
   requester_id: string
-  receiver_id: string
+  addressee_id: string
   status: FriendshipStatus
-  created_at: string
+  requested_at: string
 }
 
 // Friendship with joined profile data for display

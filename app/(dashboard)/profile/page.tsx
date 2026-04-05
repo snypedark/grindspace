@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/lib/AuthContext'
-import { updateProfile, checkUsernameAvailable, uploadAvatar, createProfile } from '@/lib/queries'
+import { updateProfile, checkUsernameAvailable, uploadAvatar } from '@/lib/queries'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { CheckCircle2, XCircle, Loader2, Upload, Save } from 'lucide-react'
@@ -127,15 +127,7 @@ export default function ProfilePage() {
       return
     }
 
-    let updateErr = null;
-    
-    if (!profile) {
-      const { error } = await createProfile(user.id, username, finalAvatarUrl)
-      updateErr = error
-    } else {
-      const { error } = await updateProfile(user.id, updates)
-      updateErr = error
-    }
+    const { error: updateErr } = await updateProfile(user.id, updates)
     
     setSaving(false)
 
@@ -175,7 +167,7 @@ export default function ProfilePage() {
 
       {!profile && !authLoading && (
         <div className="bg-[#E8EAF0] shadow-neu-sm text-[#F7A97C] px-4 py-3 rounded-[18px] text-sm font-bold">
-          Profile not found — create one by entering your username and saving below.
+          Profile loading or error.
         </div>
       )}
 

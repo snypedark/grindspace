@@ -35,15 +35,6 @@ export async function checkUsernameAvailable(username: string): Promise<boolean>
   return false
 }
 
-export async function createProfile(id: string, username: string, avatar_url?: string | null) {
-  const supabase = createClient()
-  const { data, error } = await supabase
-    .from('profiles')
-    .insert([{ id, username, avatar_url, xp: 0 }])
-    .select()
-    .single()
-  return { data, error }
-}
 
 export async function uploadAvatar(userId: string, file: File): Promise<{ url: string | null; error: Error | null }> {
   try {
@@ -75,20 +66,22 @@ export async function getUserSessions(userId: string): Promise<Session[]> {
     .from('sessions')
     .select('*')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false })
+    .order('logged_at', { ascending: false })
   if (error) return []
   return data as Session[]
 }
 
 export async function logSession(payload: {
   user_id: string
-  skill: string
-  duration_minutes: number
-  note?: string
+  skill_name: string
+  duration_mins: number
+  notes?: string
 }) {
   const supabase = createClient()
-  // Insert session — the DB trigger (increment_xp_on_session) auto-increments profiles.xp
-  return supabase.from('sessions').insert(payload).select().single()
+  // Ensure logged_at is set for proper tracking
+  const finalPayload = { ...payload, logged_at: new Date().toISOString() }
+  // Insert session — the DB trigger (increment_xp_on_session) auto-increments profiles.xp, streaks, and total_hours!
+  return supabase.from('sessions').insert(finalPayload).select().single()
 }
 
 export async function deleteSession(sessionId: string) {
@@ -113,9 +106,20 @@ export async function addGoal(payload: {
   user_id: string
   title: string
   target_minutes: number
+  period?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+  start_date?: string
+  end_date?: string
 }) {
   const supabase = createClient()
-  return supabase.from('goals').insert(payload).select().single()
+  const today = new Date().toISOString().slice(0, 10)
+  
+  const finalPayload = {
+    ...payload,
+    period: payload.period || 'daily',
+    start_date: payload.start_date || today,
+    end_date: payload.end_date || today,
+  }
+  return supabase.from('goals').insert(finalPayload).select().single()
 }
 
 export async function deleteGoal(goalId: string) {
@@ -125,18 +129,18 @@ export async function deleteGoal(goalId: string) {
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
 
-export async function getLeaderboard(): Promise<Profile[]> {
+export async function getLeaderboard(): Promise<any[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, avatar_url, xp, created_at')
+    .select('id, username, avatar_url, xp, joined_at')
     .order('xp', { ascending: false })
     .limit(50)
   if (error) {
     console.error('[Leaderboard] fetch error:', error.message)
     return []
   }
-  return (data ?? []) as Profile[]
+  return data ?? []
 }
 
 export async function getPublicProfile(userId: string): Promise<{
@@ -158,10 +162,10 @@ export async function getPublicProfile(userId: string): Promise<{
 
   const { data: sessionData } = await supabase
     .from('sessions')
-    .select('duration_minutes')
+    .select('duration_mins')
     .eq('user_id', userId)
 
-  const totalMinutes = (sessionData ?? []).reduce((sum: number, s: any) => sum + s.duration_minutes, 0)
+  const totalMinutes = (sessionData ?? []).reduce((sum: number, s: any) => sum + s.duration_mins, 0)
 
   return {
     profile: profile as Profile | null,
@@ -172,23 +176,23 @@ export async function getPublicProfile(userId: string): Promise<{
 
 // ─── Friends ─────────────────────────────────────────────────────────────────
 
-export async function searchUsers(query: string, currentUserId: string): Promise<Profile[]> {
+export async function searchUsers(query: string, currentUserId: string): Promise<any[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, avatar_url, xp, created_at')
+    .select('id, username, avatar_url, xp, joined_at')
     .ilike('username', `%${query}%`)
     .neq('id', currentUserId)
     .limit(10)
   if (error) return []
-  return (data ?? []) as Profile[]
+  return data ?? []
 }
 
-export async function sendFriendRequest(requesterId: string, receiverId: string) {
+export async function sendFriendRequest(requesterId: string, addresseeId: string) {
   const supabase = createClient()
   return supabase
     .from('friendships')
-    .insert({ requester_id: requesterId, receiver_id: receiverId, status: 'pending' })
+    .insert({ requester_id: requesterId, addressee_id: addresseeId, status: 'pending' })
     .select()
     .single()
 }
@@ -215,14 +219,14 @@ export async function getFriendRequests(userId: string) {
     .select(`
       id,
       requester_id,
-      receiver_id,
+      addressee_id,
       status,
-      created_at,
+      requested_at,
       requester:profiles!friendships_requester_id_fkey(id, username, avatar_url, xp)
     `)
-    .eq('receiver_id', userId)
+    .eq('addressee_id', userId)
     .eq('status', 'pending')
-    .order('created_at', { ascending: false })
+    .order('requested_at', { ascending: false })
   if (error) {
     console.error('[Friends] requests error:', error.message)
     return []
@@ -238,23 +242,23 @@ export async function getFriendsList(userId: string) {
     .from('friendships')
     .select(`
       id,
-      receiver_id,
-      created_at,
-      friend:profiles!friendships_receiver_id_fkey(id, username, avatar_url, xp)
+      addressee_id,
+      requested_at,
+      friend:profiles!friendships_addressee_id_fkey(id, username, avatar_url, xp)
     `)
     .eq('requester_id', userId)
     .eq('status', 'accepted')
 
-  // Friends where user is receiver
-  const { data: asReceiver } = await supabase
+  // Friends where user is addressee
+  const { data: asAddressee } = await supabase
     .from('friendships')
     .select(`
       id,
       requester_id,
-      created_at,
+      requested_at,
       friend:profiles!friendships_requester_id_fkey(id, username, avatar_url, xp)
     `)
-    .eq('receiver_id', userId)
+    .eq('addressee_id', userId)
     .eq('status', 'accepted')
 
   const friends: { id: string; friendshipId: string; username: string; avatar_url: string | null; xp: number }[] = []
@@ -263,7 +267,7 @@ export async function getFriendsList(userId: string) {
     const f = row.friend as any
     if (f) friends.push({ id: f.id, friendshipId: row.id, username: f.username, avatar_url: f.avatar_url, xp: f.xp ?? 0 })
   }
-  for (const row of asReceiver ?? []) {
+  for (const row of asAddressee ?? []) {
     const f = row.friend as any
     if (f) friends.push({ id: f.id, friendshipId: row.id, username: f.username, avatar_url: f.avatar_url, xp: f.xp ?? 0 })
   }
@@ -277,7 +281,7 @@ export async function getFriendshipStatus(userId1: string, userId2: string): Pro
   const { data } = await supabase
     .from('friendships')
     .select('status')
-    .or(`and(requester_id.eq.${userId1},receiver_id.eq.${userId2}),and(requester_id.eq.${userId2},receiver_id.eq.${userId1})`)
+    .or(`and(requester_id.eq.${userId1},addressee_id.eq.${userId2}),and(requester_id.eq.${userId2},addressee_id.eq.${userId1})`)
     .single()
 
   if (!data) return 'none'

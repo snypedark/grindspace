@@ -42,7 +42,7 @@ export function ActivityFeed({ sessions, username = 'You' }: ActivityFeedProps) 
   return (
     <div className="space-y-3">
       {sessions.slice(0, 5).map((item, i) => {
-        const skillStyle = SKILL_GRADIENTS[item.skill]
+        const skillStyle = SKILL_GRADIENTS[item.skill_name || '']
         return (
           <div
             key={item.id}
@@ -59,17 +59,17 @@ export function ActivityFeed({ sessions, username = 'You' }: ActivityFeedProps) 
                     color: skillStyle?.text ?? "#7B80A0",
                   }}
                 >
-                  {item.skill}
+                  {item.skill_name || 'Uncategorized'}
                 </span>
                 <span className="text-xs font-bold text-[#3B3F5C]">
-                  {Math.round(item.duration_minutes / 60 * 10) / 10}h logged
+                  {Math.round(item.duration_mins / 60 * 10) / 10}h logged
                 </span>
                 <span className="text-xs font-semibold text-[#A8ABBE] ml-auto">
-                  {timeAgo(item.created_at)}
+                  {timeAgo(item.logged_at)}
                 </span>
               </div>
-              {item.note && (
-                <p className="text-xs text-[#7B80A0] mt-0.5 truncate font-medium">{item.note}</p>
+              {item.notes && (
+                <p className="text-xs text-[#7B80A0] mt-0.5 truncate font-medium">{item.notes}</p>
               )}
             </div>
           </div>

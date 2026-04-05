@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signUp } from '@/lib/auth'
-import { checkUsernameAvailable, createProfile, uploadAvatar } from '@/lib/queries'
+import { checkUsernameAvailable, uploadAvatar, updateProfile } from '@/lib/queries'
 import { Button } from '@/components/ui/Button'
 import { Eye, EyeOff, CheckCircle2, XCircle, Upload, Loader2 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -90,7 +90,7 @@ export default function SignupPage() {
 
     setLoading(true)
 
-    const { data: authData, error: authError } = await signUp(email, password)
+    const { data: authData, error: authError } = await signUp(email, password, username, username)
     
     if (authError || !authData?.user) {
       setError(authError?.message ?? 'Failed to create account. Please try again.')
@@ -99,25 +99,25 @@ export default function SignupPage() {
     }
 
     const userId = authData.user.id
-    let finalAvatarUrl: string | null = selectedPreset
 
-    if (customAvatarFile) {
-      const { url, error: uploadErr } = await uploadAvatar(userId, customAvatarFile)
-      if (uploadErr) {
-        console.error('Avatar upload failed:', uploadErr)
-      } else if (url) {
-        finalAvatarUrl = url
+    // DB trigger creates profile automatically.
+    // If they picked a custom avatar or an explicit preset, update it now.
+    if (customAvatarFile || selectedPreset) {
+      let finalAvatarUrl: string | null = selectedPreset
+      
+      if (customAvatarFile) {
+        const { url, error: uploadErr } = await uploadAvatar(userId, customAvatarFile)
+        if (uploadErr) {
+          console.error('Avatar upload failed:', uploadErr)
+        } else if (url) {
+          finalAvatarUrl = url
+        }
       }
-    }
 
-    const { error: profileError } = await createProfile(userId, username, finalAvatarUrl)
+      await updateProfile(userId, { avatar_url: finalAvatarUrl })
+    }
 
     setLoading(false)
-
-    if (profileError) {
-      setError('Account created, but failed to setup profile: ' + profileError.message)
-      return
-    }
 
     setSuccess(true)
   }

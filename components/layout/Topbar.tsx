@@ -71,9 +71,9 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
     setSaving(true)
     const { error } = await logSession({
       user_id: user.id,
-      skill,
-      duration_minutes: minutes,
-      note: note.trim() || undefined,
+      skill_name: skill,
+      duration_mins: minutes,
+      notes: note.trim() || undefined,
     })
     setSaving(false)
     if (error) { setError(error.message); return }

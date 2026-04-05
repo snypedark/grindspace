@@ -3,7 +3,7 @@ import type { Goal } from '@/types/goal'
 
 // 1 XP per minute
 export function calcTotalXP(sessions: Session[]): number {
-  return sessions.reduce((sum, s) => sum + s.duration_minutes, 0)
+  return sessions.reduce((sum, s) => sum + s.duration_mins, 0)
 }
 
 // Total hours in the current ISO week (Mon–Sun)
@@ -15,8 +15,8 @@ export function calcWeeklyHours(sessions: Session[]): number {
   weekStart.setHours(0, 0, 0, 0)
 
   const minutes = sessions
-    .filter((s) => new Date(s.created_at) >= weekStart)
-    .reduce((sum, s) => sum + s.duration_minutes, 0)
+    .filter((s) => new Date(s.logged_at) >= weekStart)
+    .reduce((sum, s) => sum + s.duration_mins, 0)
 
   return Math.round((minutes / 60) * 10) / 10
 }
@@ -26,7 +26,7 @@ export function calcStreak(sessions: Session[]): number {
   if (sessions.length === 0) return 0
 
   const activityDates = new Set(
-    sessions.map((s) => new Date(s.created_at).toISOString().slice(0, 10))
+    sessions.map((s) => new Date(s.logged_at).toISOString().slice(0, 10))
   )
 
   let streak = 0
@@ -50,8 +50,8 @@ export function calcStreak(sessions: Session[]): number {
 export function calcTodayMinutes(sessions: Session[]): number {
   const today = new Date().toISOString().slice(0, 10)
   return sessions
-    .filter((s) => s.created_at.slice(0, 10) === today)
-    .reduce((sum, s) => sum + s.duration_minutes, 0)
+    .filter((s) => s.logged_at.slice(0, 10) === today)
+    .reduce((sum, s) => sum + s.duration_mins, 0)
 }
 
 // Skill distribution — sorted by hours desc
@@ -62,8 +62,9 @@ export function calcSkillDistribution(
   let total = 0
 
   for (const s of sessions) {
-    map[s.skill] = (map[s.skill] ?? 0) + s.duration_minutes
-    total += s.duration_minutes
+    const skillName = s.skill_name || 'Uncategorized'
+    map[skillName] = (map[skillName] ?? 0) + s.duration_mins
+    total += s.duration_mins
   }
 
   if (total === 0) return []
@@ -92,10 +93,10 @@ export function calcWeeklyChartData(
   weekStart.setHours(0, 0, 0, 0)
 
   for (const s of sessions) {
-    const d = new Date(s.created_at)
+    const d = new Date(s.logged_at)
     if (d >= weekStart) {
       const key = d.toISOString().slice(0, 10)
-      map[key] = (map[key] ?? 0) + s.duration_minutes
+      map[key] = (map[key] ?? 0) + s.duration_mins
     }
   }
 
@@ -112,8 +113,8 @@ export function calcHeatmapData(sessions: Session[]): Record<string, number> {
   const map: Record<string, number> = {}
 
   for (const s of sessions) {
-    const key = s.created_at.slice(0, 10)
-    map[key] = (map[key] ?? 0) + s.duration_minutes
+    const key = s.logged_at.slice(0, 10)
+    map[key] = (map[key] ?? 0) + s.duration_mins
   }
 
   const result: Record<string, number> = {}
@@ -134,8 +135,8 @@ export function calcGoalProgress(
 ): { current: number; percentage: number } {
   const today = new Date().toISOString().slice(0, 10)
   const current = sessions
-    .filter((s) => s.created_at.slice(0, 10) === today)
-    .reduce((sum, s) => sum + s.duration_minutes, 0)
+    .filter((s) => s.logged_at.slice(0, 10) === today)
+    .reduce((sum, s) => sum + s.duration_mins, 0)
   const percentage = Math.min(100, Math.round((current / goal.target_minutes) * 100))
   return { current, percentage }
 }

@@ -27,7 +27,7 @@ export interface PendingRequest {
     avatar_url: string | null
     xp: number
   }
-  created_at: string
+  requested_at: string
 }
 
 export function useFriends() {
@@ -58,7 +58,7 @@ export function useFriends() {
         requester: r.requester
           ? { id: r.requester.id, username: r.requester.username, avatar_url: r.requester.avatar_url, xp: r.requester.xp ?? 0 }
           : { id: r.requester_id, username: 'Unknown', avatar_url: null, xp: 0 },
-        created_at: r.created_at,
+        requested_at: r.requested_at,
       }))
     )
 
@@ -84,15 +84,15 @@ export function useFriends() {
   )
 
   const sendRequest = useCallback(
-    async (receiverId: string) => {
+    async (addresseeId: string) => {
       if (!userId) return
-      setActionLoading(receiverId)
-      const { error } = await sendFriendRequest(userId, receiverId)
+      setActionLoading(addresseeId)
+      const { error } = await sendFriendRequest(userId, addresseeId)
       if (error) {
         console.error('[Friends] send request error:', error.message)
       } else {
         // Remove from search results to prevent double-send
-        setSearchResults((prev) => prev.filter((u) => u.id !== receiverId))
+        setSearchResults((prev) => prev.filter((u) => u.id !== addresseeId))
       }
       setActionLoading(null)
     },
