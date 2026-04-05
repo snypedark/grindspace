@@ -6,13 +6,14 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
+  useMemo,
   ReactNode,
 } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from './supabase'
 import { getUserProfile } from './queries'
 import type { Profile } from '@/types/user'
-import { useMemo } from 'react'
 
 interface AuthContextType {
   user: User | null
@@ -35,31 +36,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = useMemo(() => createClient(), [])
-
-  // Requested debug logs
-  useEffect(() => {
-    console.log("user:", user)
-    console.log("profile:", profile)
-    console.log("loading:", loading)
-  }, [user, profile, loading])
+  const hasInitialized = useRef(false)
 
   const loadProfile = useCallback(async (userId: string) => {
+    console.log('[Auth] loadProfile:', userId)
     const p = await getUserProfile(userId)
+    console.log('[Auth] profile loaded:', p?.username ?? 'null')
     setProfile(p)
   }, [])
 
   useEffect(() => {
-    // Initial session check
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      if (user) loadProfile(user.id)
+    // Initial session check — runs once
+    supabase.auth.getUser().then(async ({ data: { user: initialUser } }) => {
+      console.log('[Auth] getUser result:', initialUser?.email ?? 'null')
+      setUser(initialUser)
+      if (initialUser) {
+        await loadProfile(initialUser.id)
+      }
       setLoading(false)
+      hasInitialized.current = true
     })
 
-    // Subscribe to auth changes
+    // Subscribe to auth changes — skip the first event (duplicates getUser)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!hasInitialized.current) return // Skip initial duplicate
+
         const currentUser = session?.user ?? null
+        console.log('[Auth] onAuthStateChange:', _event, currentUser?.email ?? 'null')
         setUser(currentUser)
         if (currentUser) {
           await loadProfile(currentUser.id)
@@ -71,19 +75,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
 
     return () => subscription.unsubscribe()
-  }, [loadProfile, supabase.auth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const signOut = useCallback(async () => {
-    console.log('[AuthContext] signOut called')
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      console.error('[AuthContext] signOut error:', error.message)
+    console.log('[LOGOUT] clicked')
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('[LOGOUT] error:', error.message)
+      }
+      setUser(null)
+      setProfile(null)
+      console.log('[LOGOUT] success — redirecting')
+      window.location.href = '/login'
+    } catch (err) {
+      console.error('[LOGOUT] unexpected error:', err)
+      // Force redirect even on error
+      window.location.href = '/login'
     }
-    setUser(null)
-    setProfile(null)
-    console.log('[AuthContext] state cleared, redirecting...')
-    // Hard redirect to fully clear all client-side cache
-    window.location.href = '/login'
   }, [supabase.auth])
 
   const refreshProfile = useCallback(async () => {
@@ -92,8 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loadProfile])
 
+  const value = useMemo(
+    () => ({ user, profile, loading, signOut, refreshProfile }),
+    [user, profile, loading, signOut, refreshProfile]
+  )
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

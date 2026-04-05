@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useAuth } from '@/lib/AuthContext'
 import { getUserSessions } from '@/lib/queries'
 import {
@@ -24,24 +24,35 @@ export interface SessionStats {
   heatmapData: Record<string, number>
 }
 
+const EMPTY_STATS: SessionStats = {
+  totalXP: 0,
+  weeklyHours: 0,
+  streak: 0,
+  todayMinutes: 0,
+  skillDistribution: [],
+  weeklyChartData: [],
+  heatmapData: {},
+}
+
 export function useSessions() {
   const { user } = useAuth()
   const [sessions, setSessions] = useState<Session[]>([])
-  const [stats, setStats] = useState<SessionStats>({
-    totalXP: 0,
-    weeklyHours: 0,
-    streak: 0,
-    todayMinutes: 0,
-    skillDistribution: [],
-    weeklyChartData: [],
-    heatmapData: {},
-  })
+  const [stats, setStats] = useState<SessionStats>(EMPTY_STATS)
   const [loading, setLoading] = useState(true)
+  const fetchedForId = useRef<string | null>(null)
+
+  const userId = user?.id ?? null
 
   const refresh = useCallback(async () => {
-    if (!user) return
+    if (!userId) {
+      setSessions([])
+      setStats(EMPTY_STATS)
+      setLoading(false)
+      return
+    }
     setLoading(true)
-    const data = await getUserSessions(user.id)
+    console.log('[useSessions] fetching for:', userId)
+    const data = await getUserSessions(userId)
     setSessions(data)
     setStats({
       totalXP: calcTotalXP(data),
@@ -53,11 +64,14 @@ export function useSessions() {
       heatmapData: calcHeatmapData(data),
     })
     setLoading(false)
-  }, [user])
+  }, [userId])
 
   useEffect(() => {
+    // Only refetch when user ID actually changes
+    if (fetchedForId.current === userId && !loading) return
+    fetchedForId.current = userId
     refresh()
-  }, [refresh])
+  }, [userId, refresh, loading])
 
   return { sessions, stats, loading, refresh }
 }
