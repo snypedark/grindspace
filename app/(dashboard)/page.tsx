@@ -10,6 +10,7 @@ import { Heatmap } from '@/components/dashboard/Heatmap'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { SkillDistribution } from '@/components/dashboard/SkillDistribution'
 import { TodayFocusCard } from '@/components/dashboard/TodayFocusCard'
+import { TasksList } from '@/components/dashboard/TasksList'
 import { Zap, Clock, Flame, Trophy } from 'lucide-react'
 
 function DashboardSkeleton() {
@@ -125,16 +126,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Skill Distribution + Goals Row */}
+      {/* Tasks + Goals Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-[18px]">
         <div className="animate-fade-slide-up stagger-4">
-          <div className="bg-[#E8EAF0] rounded-[18px] shadow-neu p-[22px] h-full hover:-translate-y-0.5 hover:shadow-neu-hover transition-all duration-220">
-            <div className="mb-4">
-              <h3 className="text-sm font-bold text-[#3B3F5C]">Skill Mix</h3>
-              <p className="text-xs font-medium text-[#7B80A0]">All time · {totalHours}h total</p>
-            </div>
-            <SkillDistribution distribution={stats.skillDistribution} />
-          </div>
+          <TasksList />
         </div>
 
         <div className="animate-fade-slide-up stagger-4">

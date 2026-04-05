@@ -1,43 +1,41 @@
 "use client"
 
-import { useEffect, useState, useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/lib/AuthContext'
 import { getUserGoals, addGoal as addGoalQuery, deleteGoal as deleteGoalQuery } from '@/lib/queries'
 import type { Goal } from '@/types/goal'
 
 export function useGoals() {
   const { user } = useAuth()
-  const [goals, setGoals] = useState<Goal[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const refresh = useCallback(async () => {
-    if (!user) return
-    setLoading(true)
-    const data = await getUserGoals(user.id)
-    setGoals(data)
-    setLoading(false)
-  }, [user])
+  const query = useQuery({
+    queryKey: ['goals', user?.id],
+    queryFn: () => getUserGoals(user!.id),
+    enabled: !!user?.id,
+  })
 
-  useEffect(() => {
-    refresh()
-  }, [refresh])
-
-  const addGoal = useCallback(
-    async (title: string, target_minutes: number) => {
-      if (!user) return
-      await addGoalQuery({ user_id: user.id, title, target_minutes })
-      await refresh()
+  const addMutation = useMutation({
+    mutationFn: ({ title, target_minutes }: { title: string; target_minutes: number }) =>
+      addGoalQuery({ user_id: user!.id, title, target_minutes }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals', user?.id] })
     },
-    [user, refresh]
-  )
+  })
 
-  const removeGoal = useCallback(
-    async (goalId: string) => {
-      await deleteGoalQuery(goalId)
-      setGoals((prev) => prev.filter((g) => g.id !== goalId))
+  const deleteMutation = useMutation({
+    mutationFn: deleteGoalQuery,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals', user?.id] })
     },
-    []
-  )
+  })
 
-  return { goals, loading, addGoal, removeGoal, refresh }
+  return {
+    goals: query.data ?? [],
+    loading: query.isLoading,
+    addGoal: (title: string, target_minutes: number) => addMutation.mutateAsync({ title, target_minutes }),
+    removeGoal: deleteMutation.mutateAsync,
+    refresh: query.refetch,
+  }
 }
+

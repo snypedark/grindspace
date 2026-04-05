@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { useSidebar } from '@/lib/SidebarContext'
 import { ReactNode, useCallback, useState } from 'react'
+import { TimeTrackerWidget } from '../dashboard/TimeTrackerWidget'
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { collapsed, toggle } = useSidebar()
@@ -23,6 +24,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {children}
           </div>
         </main>
+        <TimeTrackerWidget />
       </div>
     </div>
   )

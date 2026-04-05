@@ -2,6 +2,7 @@ import { createClient } from './supabase'
 import type { Session } from '@/types/session'
 import type { Goal } from '@/types/goal'
 import type { Profile } from '@/types/user'
+import type { Task } from '@/types/task'
 
 // ─── Profile ────────────────────────────────────────────────────────────────
 
@@ -76,6 +77,7 @@ export async function logSession(payload: {
   skill_name: string
   duration_mins: number
   notes?: string
+  task_id?: string
 }) {
   const supabase = createClient()
   // Ensure logged_at is set for proper tracking
@@ -125,6 +127,45 @@ export async function addGoal(payload: {
 export async function deleteGoal(goalId: string) {
   const supabase = createClient()
   return supabase.from('goals').delete().eq('id', goalId)
+}
+
+// ─── Tasks ───────────────────────────────────────────────────────────────────
+
+export async function getUserTasks(userId: string): Promise<Task[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('[Tasks] fetch error:', error.message)
+    return []
+  }
+  return data as Task[]
+}
+
+export async function createTask(payload: {
+  user_id: string
+  title: string
+  goal_id?: string
+  status?: string
+  estimated_mins?: number
+  parent_task_id?: string
+  scheduled_date?: string
+}) {
+  const supabase = createClient()
+  return supabase.from('tasks').insert(payload).select().single()
+}
+
+export async function updateTask(taskId: string, updates: Partial<Task>) {
+  const supabase = createClient()
+  return supabase.from('tasks').update(updates).eq('id', taskId).select().single()
+}
+
+export async function deleteTask(taskId: string) {
+  const supabase = createClient()
+  return supabase.from('tasks').delete().eq('id', taskId)
 }
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
