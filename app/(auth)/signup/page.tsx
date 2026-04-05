@@ -27,38 +27,12 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-
-  const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null)
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   
   const [selectedPreset, setSelectedPreset] = useState<string | null>(AVATAR_PRESETS[0])
   const [customAvatarFile, setCustomAvatarFile] = useState<File | null>(null)
   const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (!username) {
-      setIsUsernameAvailable(null)
-      setIsCheckingUsername(false)
-      return
-    }
-    
-    const cleanUsername = username.toLowerCase().replace(/[^a-z0-9_]/g, '')
-    if (cleanUsername !== username) {
-      setUsername(cleanUsername)
-      return
-    }
-
-    setIsCheckingUsername(true)
-    const timeoutId = setTimeout(async () => {
-      const available = await checkUsernameAvailable(cleanUsername)
-      setIsUsernameAvailable(available)
-      setIsCheckingUsername(false)
-    }, 400)
-
-    return () => clearTimeout(timeoutId)
-  }, [username])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -83,8 +57,8 @@ export default function SignupPage() {
       return
     }
 
-    if (!username || isUsernameAvailable === false) {
-      setError('Please choose a valid and available username.')
+    if (!username) {
+      setError('Please choose a username.')
       return
     }
 
@@ -168,22 +142,7 @@ export default function SignupPage() {
               maxLength={20}
               className="neu-input w-full px-3 py-2.5 pr-10 text-sm font-semibold text-[#3B3F5C] placeholder:text-[#A8ABBE]"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-              {isCheckingUsername ? (
-                <Loader2 size={16} className="animate-spin text-[#A8ABBE]" />
-              ) : isUsernameAvailable === true ? (
-                <CheckCircle2 size={16} className="text-[#5EC8A0]" />
-              ) : isUsernameAvailable === false ? (
-                <XCircle size={16} className="text-[#F07A7A]" />
-              ) : null}
-            </div>
           </div>
-          {isUsernameAvailable === false && (
-            <p className="text-[10px] text-[#F07A7A] mt-1 font-bold">Username already taken</p>
-          )}
-          {isUsernameAvailable === true && (
-            <p className="text-[10px] text-[#5EC8A0] mt-1 font-bold">Username available!</p>
-          )}
         </div>
 
         {/* Email */}
@@ -295,7 +254,7 @@ export default function SignupPage() {
         <Button
           type="submit"
           className="w-full justify-center mt-2"
-          disabled={loading || isCheckingUsername || isUsernameAvailable === false}
+          disabled={loading}
         >
           {loading ? 'Creating account…' : 'Create account'}
         </Button>
