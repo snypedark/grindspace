@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { logSession } from '@/lib/queries'
 import { SKILLS } from '@/constants/skills'
 import { useState, useRef, useEffect } from 'react'
+import { ThemeToggle } from './ThemeToggle'
 import Link from 'next/link'
 
 function getGreeting(name: string) {
@@ -117,6 +118,8 @@ export function Topbar({ onSessionLogged }: TopbarProps) {
             <Search size={16} />
             <span className="hidden sm:inline text-xs font-semibold">Search…</span>
           </button>
+
+          <ThemeToggle />
 
           {/* Notifications */}
           <button

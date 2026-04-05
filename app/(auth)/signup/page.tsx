@@ -4,18 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signUp } from '@/lib/auth'
-import { checkUsernameAvailable, uploadAvatar, updateProfile } from '@/lib/queries'
-import { Button } from '@/components/ui/Button'
-import { Eye, EyeOff, CheckCircle2, XCircle, Upload, Loader2 } from 'lucide-react'
-import { clsx } from 'clsx'
 
-const AVATAR_PRESETS = [
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=f8fafc',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Aneka&backgroundColor=f8fafc',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Jude&backgroundColor=f8fafc',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Leo&backgroundColor=f8fafc',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Mia&backgroundColor=f8fafc',
-]
+import { Button } from '@/components/ui/Button'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -27,26 +18,6 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(AVATAR_PRESETS[0])
-  const [customAvatarFile, setCustomAvatarFile] = useState<File | null>(null)
-  const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null)
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setError('Image must be less than 2MB.')
-        return
-      }
-      setCustomAvatarFile(file)
-      setSelectedPreset(null)
-      setCustomAvatarPreview(URL.createObjectURL(file))
-      setError(null)
-    }
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -70,25 +41,6 @@ export default function SignupPage() {
       setError(authError?.message ?? 'Failed to create account. Please try again.')
       setLoading(false)
       return
-    }
-
-    const userId = authData.user.id
-
-    // DB trigger creates profile automatically.
-    // If they picked a custom avatar or an explicit preset, update it now.
-    if (customAvatarFile || selectedPreset) {
-      let finalAvatarUrl: string | null = selectedPreset
-      
-      if (customAvatarFile) {
-        const { url, error: uploadErr } = await uploadAvatar(userId, customAvatarFile)
-        if (uploadErr) {
-          console.error('Avatar upload failed:', uploadErr)
-        } else if (url) {
-          finalAvatarUrl = url
-        }
-      }
-
-      await updateProfile(userId, { avatar_url: finalAvatarUrl })
     }
 
     setLoading(false)
@@ -184,67 +136,6 @@ export default function SignupPage() {
           </div>
         </div>
 
-        {/* Avatar Selection */}
-        <div>
-          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-2.5">
-            Choose Avatar
-          </label>
-          <div className="flex flex-wrap items-center gap-3">
-            {AVATAR_PRESETS.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => {
-                  setSelectedPreset(preset)
-                  setCustomAvatarFile(null)
-                  setCustomAvatarPreview(null)
-                }}
-                className="w-10 h-10 rounded-full overflow-hidden shrink-0 select-none transition-all duration-200"
-                style={{
-                  boxShadow: selectedPreset === preset
-                    ? "4px 4px 10px rgba(92,81,224,0.3), -2px -2px 6px rgba(255,255,255,0.6)"
-                    : "3px 3px 8px #C5C8D6, -3px -3px 8px #FFFFFF",
-                  transform: selectedPreset === preset ? "scale(1.12)" : undefined,
-                  opacity: selectedPreset === preset ? 1 : 0.7,
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={preset} alt="preset" className="w-full h-full object-cover" />
-              </button>
-            ))}
-            
-            <div className="w-px h-6 bg-[#E8EAF0] mx-0.5 shrink-0" style={{ boxShadow: "inset 1px 1px 2px #C5C8D6, inset -1px -1px 2px #FFFFFF" }} />
-            
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="relative flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-all duration-200 text-[#7B80A0]"
-              style={{
-                boxShadow: customAvatarPreview
-                  ? "4px 4px 10px rgba(92,81,224,0.3), -2px -2px 6px rgba(255,255,255,0.6)"
-                  : "inset 3px 3px 8px #C5C8D6, inset -3px -3px 8px #FFFFFF",
-                background: "#E8EAF0",
-                overflow: customAvatarPreview ? "hidden" : undefined,
-                transform: customAvatarPreview ? "scale(1.12)" : undefined,
-              }}
-            >
-              {customAvatarPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={customAvatarPreview} alt="uploaded" className="w-full h-full object-cover" />
-              ) : (
-                <Upload size={14} />
-              )}
-            </button>
-          </div>
-        </div>
-
         {error && (
           <div className="bg-[#E8EAF0] shadow-neu-sm text-[#F07A7A] text-xs font-semibold rounded-xl px-3 py-2.5">
             {error}
@@ -258,6 +149,32 @@ export default function SignupPage() {
         >
           {loading ? 'Creating account…' : 'Create account'}
         </Button>
+
+        <div className="relative flex items-center py-2">
+          <div className="flex-grow border-t border-[#C5C8D6] opacity-30"></div>
+          <span className="flex-shrink-0 mx-4 text-xs font-bold text-[#A8ABBE] uppercase tracking-wider">or</span>
+          <div className="flex-grow border-t border-[#C5C8D6] opacity-30"></div>
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+             setLoading(true)
+             const { signInWithGoogle } = await import('@/lib/auth')
+             await signInWithGoogle()
+             setLoading(false)
+          }}
+          disabled={loading}
+          className="neu-button-ghost w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-[#3B3F5C] rounded-xl transition-all"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+          Continue with Google
+        </button>
       </form>
 
       <p className="text-center text-xs font-semibold text-[#7B80A0] mt-5">

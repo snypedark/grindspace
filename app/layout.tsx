@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Nunito } from 'next/font/google'
 import '../styles/globals.css'
 import { AuthProvider } from '@/lib/AuthContext'
-
+import Providers from './providers'
 const nunito = Nunito({
   subsets: ['latin'],
   variable: '--font-nunito',
@@ -23,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={nunito.variable}>
       <body className="bg-[#E8EAF0] text-[#3B3F5C] antialiased font-sans">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <Providers>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   )

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface SidebarContextType {
     collapsed: boolean;
@@ -14,7 +14,22 @@ const SidebarContext = createContext<SidebarContextType>({
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
     const [collapsed, setCollapsed] = useState(false);
-    const toggle = () => setCollapsed((v) => !v);
+    
+    useEffect(() => {
+        const saved = localStorage.getItem("grindspace_sidebar_collapsed");
+        if (saved === "true") {
+            setCollapsed(true);
+        }
+    }, []);
+
+    const toggle = () => {
+        setCollapsed((v) => {
+            const nextVal = !v;
+            localStorage.setItem("grindspace_sidebar_collapsed", nextVal.toString());
+            return nextVal;
+        });
+    };
+    
     return (
         <SidebarContext.Provider value={{ collapsed, toggle }}>
             {children}

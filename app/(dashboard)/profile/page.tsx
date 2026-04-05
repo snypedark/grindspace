@@ -21,6 +21,11 @@ export default function ProfilePage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth()
 
   const [username, setUsername] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [bio, setBio] = useState('')
+  const [location, setLocation] = useState('')
+  const [currentFocus, setCurrentFocus] = useState('')
+  
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [customFile, setCustomFile] = useState<File | null>(null)
   const [customPreview, setCustomPreview] = useState<string | null>(null)
@@ -37,6 +42,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setUsername(profile.username ?? '')
+      setDisplayName(profile.display_name ?? '')
+      setBio(profile.bio ?? '')
+      setLocation(profile.location ?? '')
+      setCurrentFocus(profile.current_focus ?? '')
       setAvatarUrl(profile.avatar_url ?? null)
     }
   }, [profile])
@@ -118,6 +127,10 @@ export default function ProfilePage() {
 
     const updates: Record<string, string | null> = {}
     if (username !== profile?.username) updates.username = username
+    if (displayName !== profile?.display_name) updates.display_name = displayName
+    if (bio !== profile?.bio) updates.bio = bio
+    if (location !== profile?.location) updates.location = location
+    if (currentFocus !== profile?.current_focus) updates.current_focus = currentFocus
     if (finalAvatarUrl !== profile?.avatar_url) updates.avatar_url = finalAvatarUrl
 
     if (Object.keys(updates).length === 0 && profile) {
@@ -262,6 +275,52 @@ export default function ProfilePage() {
           {isUsernameAvailable === true && (
             <p className="text-[10px] text-[#5EC8A0] mt-1 font-bold">Username available</p>
           )}
+        </div>
+
+        {/* Display Name */}
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">Display Name</label>
+          <input
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="neu-input w-full px-3 py-2.5 text-sm font-semibold text-[#3B3F5C]"
+          />
+        </div>
+
+        {/* Bio */}
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">Bio</label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={3}
+            className="neu-input w-full px-3 py-2.5 text-sm font-semibold text-[#3B3F5C] resize-none"
+          />
+        </div>
+
+        {/* Location Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="neu-input w-full px-3 py-2.5 text-sm font-semibold text-[#3B3F5C]"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-[0.1em] text-[#A8ABBE] mb-1.5">Current Focus</label>
+            <input
+              type="text"
+              value={currentFocus}
+              onChange={(e) => setCurrentFocus(e.target.value)}
+              placeholder="e.g. Building startup"
+              className="neu-input w-full px-3 py-2.5 text-sm font-semibold text-[#3B3F5C]"
+            />
+          </div>
         </div>
 
         {/* Email (read-only) */}
